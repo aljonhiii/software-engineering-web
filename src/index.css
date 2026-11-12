@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #FFFFFF;
+    color: #0F172A;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: 'Outfit', 'Plus Jakarta Sans', 'Inter', sans-serif;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+}
+
+/* Custom Leaflet Marker & Popup Enhancements */
+.leaflet-container {
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif !important;
+  z-index: 10;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 16px !important;
+  box-shadow: 0 20px 35px -10px rgba(15, 23, 42, 0.16), 0 8px 14px -6px rgba(15, 23, 42, 0.08) !important;
+  padding: 4px !important;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.leaflet-popup-content {
+  margin: 12px 14px !important;
+  line-height: 1.45 !important;
+}
+
+.kix-custom-pin {
+  background: transparent;
+  border: none;
+}
