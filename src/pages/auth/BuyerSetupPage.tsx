@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, Monitor, Download, Play } from 'lucide-react';
 import {
   verifyInvitationToken,
   completeBuyerAccountSetup,
+  downloadKioskWindowsLauncher,
 } from '../../api/client';
 import { BuyerInvitationInfo } from '../../types';
 
@@ -141,15 +142,112 @@ export const BuyerSetupPage: React.FC = () => {
                       {invitation.username}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-400">Kiosks</span>
-                    <span className="font-mono font-medium text-neutral-900">
-                      {invitation.assignedKioskIds.length > 0
-                        ? invitation.assignedKioskIds.join(', ')
-                        : 'None yet'}
-                    </span>
-                  </div>
                 </div>
+
+                {/* Connected Kiosks */}
+                {invitation.assignedKiosks && invitation.assignedKiosks.length > 0 ? (
+                  <div className="rounded-xl border border-neutral-200 bg-neutral-50/70 p-4 text-xs space-y-3">
+                    <div className="flex items-center gap-1.5 font-semibold text-neutral-900">
+                      <Monitor className="h-4 w-4 text-neutral-700" />
+                      Your Dedicated Kiosk
+                    </div>
+                    <p className="text-[11px] text-neutral-500">
+                      Orders placed on this kiosk terminal will instantly sync to your mobile monitoring app.
+                    </p>
+
+                    <div className="space-y-2">
+                      {invitation.assignedKiosks.map((k) => {
+                        const kioskUrl =
+                          k.launcherUrl ||
+                          `http://localhost:8082/?kioskId=${encodeURIComponent(k.id)}`;
+                        return (
+                          <div
+                            key={k.id}
+                            className="rounded-lg border border-neutral-200 bg-white p-3 space-y-2"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-mono font-bold text-neutral-950">
+                                {k.id}
+                              </span>
+                              <span className="text-[11px] text-neutral-500">
+                                {k.name || 'Dedicated Kiosk'}
+                              </span>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-2 pt-1">
+                              <a
+                                href={kioskUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1.5 rounded-full bg-neutral-950 px-3.5 py-1.5 text-[11px] font-medium text-white hover:bg-neutral-800"
+                              >
+                                <Play className="h-3 w-3 fill-white" />
+                                Launch Kiosk
+                              </a>
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  downloadKioskWindowsLauncher(k.id, invitation.fullName)
+                                }
+                                className="inline-flex items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-3.5 py-1.5 text-[11px] font-medium text-neutral-800 hover:bg-neutral-50"
+                              >
+                                <Download className="h-3 w-3 text-neutral-600" />
+                                Download Windows Launcher (.bat)
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : invitation.assignedKioskIds && invitation.assignedKioskIds.length > 0 ? (
+                  <div className="rounded-xl border border-neutral-200 bg-neutral-50/70 p-4 text-xs space-y-3">
+                    <div className="flex items-center gap-1.5 font-semibold text-neutral-900">
+                      <Monitor className="h-4 w-4 text-neutral-700" />
+                      Your Dedicated Kiosk
+                    </div>
+                    <div className="space-y-2">
+                      {invitation.assignedKioskIds.map((kId) => {
+                        const kioskUrl = `http://localhost:8082/?kioskId=${encodeURIComponent(kId)}`;
+                        return (
+                          <div
+                            key={kId}
+                            className="rounded-lg border border-neutral-200 bg-white p-3 space-y-2"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-mono font-bold text-neutral-950">
+                                {kId}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 pt-1">
+                              <a
+                                href={kioskUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1.5 rounded-full bg-neutral-950 px-3.5 py-1.5 text-[11px] font-medium text-white hover:bg-neutral-800"
+                              >
+                                <Play className="h-3 w-3 fill-white" />
+                                Launch Kiosk
+                              </a>
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  downloadKioskWindowsLauncher(kId, invitation.fullName)
+                                }
+                                className="inline-flex items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-3.5 py-1.5 text-[11px] font-medium text-neutral-800 hover:bg-neutral-50"
+                              >
+                                <Download className="h-3 w-3 text-neutral-600" />
+                                Download Windows Launcher (.bat)
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
 
                 <Link
                   to="/"

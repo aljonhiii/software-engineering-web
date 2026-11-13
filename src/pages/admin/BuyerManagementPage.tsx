@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Search, Copy, Check, ExternalLink, X } from 'lucide-react';
+import { Plus, Search, Copy, Check, ExternalLink, X, Monitor, Download, Play } from 'lucide-react';
 import {
   fetchAdminBuyers,
   fetchAdminKiosks,
@@ -7,6 +7,7 @@ import {
   updateAdminBuyer,
   toggleAdminBuyerStatus,
   regenerateBuyerInvite,
+  downloadKioskWindowsLauncher,
 } from '../../api/client';
 import { AdminBuyer, AdminKiosk } from '../../types';
 import { StatusBadge } from '../../components/common/StatusBadge';
@@ -29,6 +30,11 @@ export const BuyerManagementPage: React.FC = () => {
   const [phone, setPhone] = useState<string>('');
   const [companyName, setCompanyName] = useState<string>('');
   const [selectedKioskIds, setSelectedKioskIds] = useState<string[]>([]);
+  const [createDedicatedKiosk, setCreateDedicatedKiosk] = useState<boolean>(true);
+  const [dedicatedKioskId, setDedicatedKioskId] = useState<string>('');
+  const [dedicatedKioskName, setDedicatedKioskName] = useState<string>('');
+  const [dedicatedKioskCity, setDedicatedKioskCity] = useState<string>('Metro Manila');
+  const [dedicatedKioskAddress, setDedicatedKioskAddress] = useState<string>('');
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState<boolean>(false);
 
@@ -37,6 +43,13 @@ export const BuyerManagementPage: React.FC = () => {
     buyerEmail: string;
     setupUrl: string;
     expiresAt: string;
+    dedicatedKiosk?: {
+      id: string;
+      name: string;
+      city?: string;
+      address?: string;
+      launcherUrl?: string;
+    } | null;
   } | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
 
@@ -74,6 +87,11 @@ export const BuyerManagementPage: React.FC = () => {
     setPhone('');
     setCompanyName('');
     setSelectedKioskIds([]);
+    setCreateDedicatedKiosk(true);
+    setDedicatedKioskId('');
+    setDedicatedKioskName('');
+    setDedicatedKioskCity('Metro Manila');
+    setDedicatedKioskAddress('');
     setFormError(null);
     setIsModalOpen(true);
   };
@@ -120,6 +138,11 @@ export const BuyerManagementPage: React.FC = () => {
           phone: phone.trim(),
           companyName: companyName.trim(),
           kioskIds: selectedKioskIds,
+          createDedicatedKiosk,
+          dedicatedKioskId: dedicatedKioskId.trim() || undefined,
+          dedicatedKioskName: dedicatedKioskName.trim() || undefined,
+          dedicatedKioskCity: dedicatedKioskCity.trim() || undefined,
+          dedicatedKioskAddress: dedicatedKioskAddress.trim() || undefined,
         });
         setFeedback({ type: 'success', message: res.message });
         setIsModalOpen(false);
@@ -132,6 +155,7 @@ export const BuyerManagementPage: React.FC = () => {
           buyerEmail: res.buyer.email,
           setupUrl: fullSetupUrl,
           expiresAt: res.invitation.expiresAt,
+          dedicatedKiosk: res.dedicatedKiosk,
         });
       }
     } catch (err: any) {
@@ -330,15 +354,48 @@ export const BuyerManagementPage: React.FC = () => {
 
                     <td className="px-4 py-3.5">
                       {buyer.assignedKiosks.length > 0 ? (
-                        <div className="flex flex-wrap gap-1.5">
-                          {buyer.assignedKiosks.map((k) => (
-                            <span
-                              key={k.id}
-                              className="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-0.5 font-mono text-[11px] text-neutral-800"
-                            >
-                              {k.id}
-                            </span>
-                          ))}
+                        <div className="flex flex-col gap-1.5">
+                          {buyer.assignedKiosks.map((k) => {
+                            const kioskUrl =
+                              k.launcherUrl ||
+                              `http://localhost:8082/?kioskId=${encodeURIComponent(k.id)}`;
+                            return (
+                              <div
+                                key={k.id}
+                                className="inline-flex items-center justify-between gap-2 rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-xs"
+                              >
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                  <Monitor className="h-3.5 w-3.5 text-neutral-400 shrink-0" />
+                                  <span className="font-mono font-medium text-neutral-900 truncate">
+                                    {k.id}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <a
+                                    href={kioskUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    title={`Launch Kiosk ${k.id} in Browser`}
+                                    className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-white px-2 py-0.5 text-[11px] font-medium text-neutral-700 shadow-2xs hover:bg-neutral-100"
+                                  >
+                                    <Play className="h-2.5 w-2.5 fill-emerald-600 text-emerald-600" />
+                                    Launch
+                                  </a>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      downloadKioskWindowsLauncher(k.id, buyer.fullName)
+                                    }
+                                    title={`Download Windows Launcher (.bat) for ${k.id}`}
+                                    className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-white px-2 py-0.5 text-[11px] font-medium text-neutral-700 shadow-2xs hover:bg-neutral-100"
+                                  >
+                                    <Download className="h-2.5 w-2.5 text-neutral-600" />
+                                    .bat
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       ) : (
                         <span className="text-neutral-400">None</span>
@@ -470,13 +527,97 @@ export const BuyerManagementPage: React.FC = () => {
               </div>
 
               {!editingBuyer && (
+                <div className="rounded-xl border border-neutral-200 bg-neutral-50/70 p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <label className="flex items-center gap-2 cursor-pointer font-medium text-xs text-neutral-900">
+                        <input
+                          type="checkbox"
+                          checked={createDedicatedKiosk}
+                          onChange={(e) => setCreateDedicatedKiosk(e.target.checked)}
+                          className="h-4 w-4 rounded border-neutral-300 text-neutral-950 focus:ring-neutral-950"
+                        />
+                        Provision Dedicated Software Kiosk
+                      </label>
+                      <p className="mt-0.5 text-[11px] text-neutral-500">
+                        Creates a dedicated software terminal connected exclusively to this owner.
+                      </p>
+                    </div>
+                    <Monitor className="h-4 w-4 text-neutral-400 mt-0.5 shrink-0" />
+                  </div>
+
+                  {createDedicatedKiosk && (
+                    <div className="mt-2 space-y-3 border-t border-neutral-200/80 pt-3">
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div>
+                          <label className="block text-[11px] font-medium text-neutral-700">
+                            Kiosk ID (auto if empty)
+                          </label>
+                          <input
+                            type="text"
+                            value={dedicatedKioskId}
+                            onChange={(e) => setDedicatedKioskId(e.target.value)}
+                            placeholder={
+                              username || fullName
+                                ? `KIOSK-${(username || fullName).replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 8)}-01`
+                                : 'KIOSK-OWNER-01'
+                            }
+                            className="mt-1 w-full rounded-xl border border-neutral-200 bg-white px-3 py-1.5 font-mono text-xs uppercase"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-medium text-neutral-700">
+                            Kiosk Display Name
+                          </label>
+                          <input
+                            type="text"
+                            value={dedicatedKioskName}
+                            onChange={(e) => setDedicatedKioskName(e.target.value)}
+                            placeholder={fullName ? `${fullName}'s Kiosk` : 'Main Kiosk'}
+                            className="mt-1 w-full rounded-xl border border-neutral-200 bg-white px-3 py-1.5 text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div>
+                          <label className="block text-[11px] font-medium text-neutral-700">
+                            City
+                          </label>
+                          <input
+                            type="text"
+                            value={dedicatedKioskCity}
+                            onChange={(e) => setDedicatedKioskCity(e.target.value)}
+                            placeholder="Metro Manila"
+                            className="mt-1 w-full rounded-xl border border-neutral-200 bg-white px-3 py-1.5 text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-medium text-neutral-700">
+                            Address / Location
+                          </label>
+                          <input
+                            type="text"
+                            value={dedicatedKioskAddress}
+                            onChange={(e) => setDedicatedKioskAddress(e.target.value)}
+                            placeholder="Main Branch Terminal"
+                            className="mt-1 w-full rounded-xl border border-neutral-200 bg-white px-3 py-1.5 text-xs"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {!editingBuyer && (
                 <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3.5">
                   <p className="text-xs font-medium text-neutral-700">
-                    Assign available kiosks (optional)
+                    Assign additional existing kiosks (optional)
                   </p>
                   {unassignedKiosks.length === 0 ? (
                     <p className="mt-1 text-xs text-neutral-400">
-                      All kiosks are currently assigned.
+                      All existing kiosks are currently assigned.
                     </p>
                   ) : (
                     <div className="mt-2 max-h-36 space-y-1.5 overflow-y-auto">
@@ -539,14 +680,14 @@ export const BuyerManagementPage: React.FC = () => {
       {/* Setup Link Modal */}
       {inviteModalData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/40 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md rounded-2xl border border-neutral-200 bg-white p-6 shadow-xl">
+          <div className="w-full max-w-lg rounded-2xl border border-neutral-200 bg-white p-6 shadow-xl">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h3 className="font-display text-lg font-bold text-neutral-950">
-                  Invitation Link Ready
+                  Account &amp; Kiosk Ready
                 </h3>
                 <p className="mt-0.5 text-xs text-neutral-500">
-                  Send this one-time password setup link to {inviteModalData.buyerName}.
+                  Share the setup link with {inviteModalData.buyerName} and test their dedicated kiosk.
                 </p>
               </div>
               <button
@@ -558,8 +699,12 @@ export const BuyerManagementPage: React.FC = () => {
               </button>
             </div>
 
+            {/* Owner Setup Link */}
             <div className="mt-4 rounded-xl border border-neutral-200 bg-neutral-50 p-3.5 text-xs">
-              <p className="break-all font-mono text-[11px] text-neutral-800">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+                Owner Setup Link
+              </p>
+              <p className="mt-1 break-all font-mono text-[11px] text-neutral-800">
                 {inviteModalData.setupUrl}
               </p>
 
@@ -587,16 +732,68 @@ export const BuyerManagementPage: React.FC = () => {
                   className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-4 py-1.5 text-xs font-medium text-neutral-700 hover:border-neutral-950"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
-                  Open page
+                  Open setup page
                 </a>
               </div>
             </div>
+
+            {/* Dedicated Kiosk Card if provisioned */}
+            {inviteModalData.dedicatedKiosk && (
+              <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-900">
+                    <Monitor className="h-4 w-4 text-emerald-700" />
+                    Dedicated Kiosk Provisioned
+                  </span>
+                  <span className="rounded-md border border-emerald-300 bg-white px-2 py-0.5 font-mono text-[11px] font-bold text-emerald-800">
+                    {inviteModalData.dedicatedKiosk.id}
+                  </span>
+                </div>
+
+                <p className="mt-1 text-[11px] text-emerald-800">
+                  {inviteModalData.dedicatedKiosk.name} &bull; {inviteModalData.dedicatedKiosk.city || 'Metro Manila'}
+                </p>
+
+                <p className="mt-2 text-[11px] text-neutral-600">
+                  Orders submitted through this kiosk will route directly to <strong>{inviteModalData.buyerName}</strong>'s monitoring dashboard.
+                </p>
+
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <a
+                    href={
+                      inviteModalData.dedicatedKiosk.launcherUrl ||
+                      `http://localhost:8082/?kioskId=${encodeURIComponent(inviteModalData.dedicatedKiosk.id)}`
+                    }
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-emerald-700 px-4 py-1.5 text-xs font-medium text-white hover:bg-emerald-800 shadow-xs"
+                  >
+                    <Play className="h-3.5 w-3.5 fill-white" />
+                    Launch Kiosk App
+                  </a>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      downloadKioskWindowsLauncher(
+                        inviteModalData.dedicatedKiosk!.id,
+                        inviteModalData.buyerName
+                      )
+                    }
+                    className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-white px-4 py-1.5 text-xs font-medium text-emerald-900 hover:bg-emerald-100"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    Download Windows Launcher (.bat)
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="mt-5 flex justify-end border-t border-neutral-100 pt-4">
               <button
                 type="button"
                 onClick={() => setInviteModalData(null)}
-                className="rounded-full bg-neutral-950 px-4 py-1.5 text-xs font-medium text-white"
+                className="rounded-full bg-neutral-950 px-5 py-2 text-xs font-medium text-white hover:bg-neutral-800"
               >
                 Done
               </button>

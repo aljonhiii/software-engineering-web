@@ -76,6 +76,7 @@ export interface BuyerAssignedKioskSummary {
   status: KioskOperatingStatus;
   isActive: boolean;
   assignedAt: string;
+  launcherUrl?: string;
 }
 
 export interface AdminBuyer {
@@ -140,4 +141,13 @@ export interface BuyerInvitationInfo {
   companyName: string | null;
   role: string;
   assignedKioskIds: string[];
+  assignedKiosks?: Array<{
+    id: string;
+    name: string;
+    city: string;
+    address: string;
+    location: string;
+    status: string;
+    launcherUrl?: string;
+  }>;
 }

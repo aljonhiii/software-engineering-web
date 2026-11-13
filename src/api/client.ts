@@ -250,10 +250,23 @@ export async function createAdminBuyer(payload: {
   companyName?: string;
   kioskIds?: string[];
   allowTransfer?: boolean;
+  createDedicatedKiosk?: boolean;
+  dedicatedKioskId?: string;
+  dedicatedKioskName?: string;
+  dedicatedKioskCity?: string;
+  dedicatedKioskAddress?: string;
 }): Promise<{
   success: boolean;
   message: string;
   buyer: AdminBuyer;
+  dedicatedKiosk?: {
+    id: string;
+    name: string;
+    city: string;
+    address: string;
+    launcherUrl: string;
+  } | null;
+  launcherUrl?: string;
   invitation: {
     token: string;
     setupPath: string;
@@ -264,6 +277,38 @@ export async function createAdminBuyer(payload: {
     method: 'POST',
     body: JSON.stringify(payload),
   });
+}
+
+/**
+ * Downloads a pre-configured Windows .bat script that launches the dedicated Kiosk Web Terminal.
+ */
+export function downloadKioskWindowsLauncher(kioskId: string, ownerName?: string): void {
+  const cleanId = (kioskId || 'KIOSK-01-MAIN').trim().toUpperCase();
+  const label = ownerName ? ` - ${ownerName}` : '';
+  const batContent = `@echo off
+title KixCleen Kiosk Software${label} [%KIOSK_ID%]
+echo ========================================================
+echo   KixCleen Automated Shoe-Cleaning Kiosk Terminal
+echo   Assigned Kiosk ID: ${cleanId}
+echo   Owner Account: ${ownerName || 'Authorized Operator'}
+echo ========================================================
+echo.
+echo Launching Kiosk Software in default browser...
+start "" "http://localhost:8082/?kioskId=${cleanId}"
+echo.
+echo Terminal running at http://localhost:8082/?kioskId=${cleanId}
+echo You can keep this window open or close it.
+`;
+
+  const blob = new Blob([batContent], { type: 'application/x-bat' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Launch_KixCleen_${cleanId}.bat`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 export async function updateAdminBuyer(
