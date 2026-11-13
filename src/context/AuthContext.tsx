@@ -81,7 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const idleTime = Date.now() - lastActivity;
       if (idleTime > 30 * 60 * 1000) {
         logout();
-        window.location.href = '/admin/login?expired=1';
+        window.location.href = '/admin/login';
       }
     }, 30 * 1000);
 

@@ -1,17 +1,14 @@
 import React, { useState } from 'react';
-import { useNavigate, Navigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export const AdminLoginPage: React.FC = () => {
   const { login, isAuthenticated, isSuperAdmin } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const isSessionExpired = searchParams.get('expired') === '1';
-  const isTampered = searchParams.get('tampered') === '1';
 
-  const [identifier, setIdentifier] = useState<string>('superadmin@kixcleen.com');
-  const [password, setPassword] = useState<string>('admin1234');
+  const [identifier, setIdentifier] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +22,7 @@ export const AdminLoginPage: React.FC = () => {
     setError(null);
 
     if (!identifier.trim() || !password.trim()) {
-      setError('Enter your email and password.');
+      setError('Please enter your credentials.');
       return;
     }
 
@@ -33,12 +30,12 @@ export const AdminLoginPage: React.FC = () => {
     try {
       const loggedUser = await login(identifier.trim(), password);
       if (loggedUser.role !== 'superadmin') {
-        setError('Super Admin access required. Buyers sign in on the mobile app.');
+        setError('Invalid credentials.');
         return;
       }
       navigate('/admin');
     } catch (err: any) {
-      setError(err.message || 'Invalid credentials.');
+      setError('Invalid credentials.');
     } finally {
       setLoading(false);
     }
@@ -62,29 +59,17 @@ export const AdminLoginPage: React.FC = () => {
 
           <div className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-[11px] font-semibold text-neutral-600">
             <ShieldCheck className="h-3.5 w-3.5 text-neutral-500" />
-            <span>Admin Portal</span>
+            <span>Portal</span>
           </div>
         </div>
 
         <div className="mx-auto w-full max-w-sm py-12">
           <h1 className="font-display text-2xl font-bold text-neutral-950 sm:text-3xl">
-            Admin Sign In
+            Sign In
           </h1>
           <p className="mt-1 text-xs text-neutral-500">
-            Manage kiosks, buyer accounts, and assignments.
+            Enter your credentials to access the management portal.
           </p>
-
-          {isTampered && (
-            <div className="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-3.5 text-xs text-amber-900 leading-relaxed shadow-2xs">
-              <strong>Session Required:</strong> An active Super Administrator session is required to access that URL. Please sign in below to continue.
-            </div>
-          )}
-
-          {isSessionExpired && (
-            <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-900 leading-relaxed">
-              <strong>Session Expired:</strong> Your administrative session has timed out due to inactivity. Please sign in again.
-            </div>
-          )}
 
           {error && (
             <div className="mt-5 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
@@ -102,7 +87,7 @@ export const AdminLoginPage: React.FC = () => {
                 required
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="superadmin@kixcleen.com"
+                placeholder="Enter email or username"
                 className="mt-1 w-full rounded-xl border border-neutral-200 px-3.5 py-2.5 text-sm focus:border-neutral-950 focus:outline-hidden"
               />
             </div>
@@ -142,11 +127,6 @@ export const AdminLoginPage: React.FC = () => {
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
-
-          <div className="mt-6 rounded-xl border border-neutral-200 bg-neutral-50 p-3 text-xs text-neutral-500">
-            Default login: <span className="font-mono text-neutral-900">superadmin@kixcleen.com</span> /{' '}
-            <span className="font-mono text-neutral-900">admin1234</span>
-          </div>
         </div>
 
         <p className="text-xs text-neutral-400">

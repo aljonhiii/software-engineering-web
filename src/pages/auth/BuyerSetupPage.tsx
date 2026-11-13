@@ -59,7 +59,7 @@ export const BuyerSetupPage: React.FC = () => {
       ) {
         setIsAlreadyDone(true);
       } else if (msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network')) {
-        setVerifyError('Could not connect to the backend server. Please verify you are on the same Wi-Fi network and tap Retry.');
+        setVerifyError('Could not connect to the server. Please check your connection and tap Retry.');
       } else {
         setVerifyError(
           err.message || 'This invitation link is invalid or expired.'
@@ -181,7 +181,7 @@ export const BuyerSetupPage: React.FC = () => {
                   Retry Connection
                 </button>
                 <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3 text-center text-xs text-neutral-500">
-                  Please ask your Super Administrator to generate a new invitation if needed.
+                  Please contact support to request a new invitation if needed.
                 </div>
               </div>
             ) : completed && invitation ? (

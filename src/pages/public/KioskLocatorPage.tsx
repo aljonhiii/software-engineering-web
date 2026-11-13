@@ -475,24 +475,17 @@ export const KioskLocatorPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Center Column: Natural Footwear Showcase */}
+          {/* Center Column: Natural Footwear Showcase (Seamless Background) */}
           <div className="order-1 flex flex-col items-center lg:order-2 lg:col-span-5">
             <div className="relative flex w-full flex-col items-center">
-              <div className="relative flex h-[300px] w-full max-w-[380px] sm:h-[350px] flex-col items-center justify-center rounded-3xl border border-neutral-200/90 bg-gradient-to-b from-neutral-50 to-neutral-100/70 p-6 shadow-sm">
-                <div className="relative flex flex-1 w-full items-center justify-center">
-                  <img
-                    src={currentHero.cutout}
-                    alt={currentHero.label}
-                    className="max-h-[220px] sm:max-h-[250px] w-auto object-contain transition-transform duration-500 hover:scale-105 drop-shadow-[0_16px_20px_rgba(0,0,0,0.18)]"
-                  />
-                  {/* Natural Ground Contact Shadow */}
-                  <div className="absolute -bottom-1 h-3 w-4/5 rounded-full bg-neutral-900/10 blur-md pointer-events-none" />
-                </div>
-
-                <div className="mt-3 flex w-full items-center justify-between rounded-xl border border-neutral-200 bg-white/90 px-3.5 py-2 text-[11px] font-medium text-neutral-600 shadow-2xs backdrop-blur-xs">
-                  <span className="font-semibold text-neutral-900">{currentHero.label}</span>
-                  <span className="font-mono text-neutral-600">3 to 5 mins</span>
-                </div>
+              <div className="relative flex h-[280px] w-full max-w-[420px] sm:h-[330px] items-center justify-center">
+                <img
+                  src={currentHero.cutout}
+                  alt={currentHero.label}
+                  className="max-h-[240px] sm:max-h-[280px] w-auto object-contain transition-transform duration-500 hover:scale-105 drop-shadow-[0_20px_24px_rgba(0,0,0,0.12)]"
+                />
+                {/* Natural Ground Contact Shadow */}
+                <div className="absolute bottom-2 h-4 w-3/4 rounded-full bg-neutral-900/10 blur-lg pointer-events-none" />
               </div>
 
               <div className="mt-4 flex items-center gap-1.5">
@@ -503,7 +496,7 @@ export const KioskLocatorPage: React.FC = () => {
                     onClick={() => setActiveSlide(idx)}
                     className={`rounded-full px-3 py-1 text-xs font-medium transition ${
                       idx === activeSlide
-                        ? 'bg-neutral-950 text-white'
+                        ? 'bg-neutral-950 text-white shadow-2xs'
                         : 'border border-neutral-200 text-neutral-600 hover:border-neutral-950 hover:text-neutral-950'
                     }`}
                   >

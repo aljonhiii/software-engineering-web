@@ -90,7 +90,7 @@ export const KioskManagementPage: React.FC = () => {
     setEditingKiosk(null);
     setForm({
       ...initialForm,
-      id: `KIOSK-0${kiosks.length + 1}-METRO`,
+      id: `KIOSK-0${kiosks.length + 1}-ZAM`,
     });
     setFormError(null);
     setIsModalOpen(true);

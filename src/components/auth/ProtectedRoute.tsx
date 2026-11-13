@@ -20,17 +20,14 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
       <div className="flex min-h-screen items-center justify-center bg-neutral-50 text-xs text-neutral-500">
         <div className="flex flex-col items-center gap-2">
           <div className="h-5 w-5 animate-spin rounded-full border-2 border-neutral-900 border-t-transparent" />
-          <span>Verifying administrator session...</span>
+          <span>Loading...</span>
         </div>
       </div>
     );
   }
 
   if (!isAuthenticated || !isSuperAdmin) {
-    // If user attempted to navigate directly to an admin URL without a session:
-    const isDirectTamper = location.pathname.startsWith('/admin') && location.pathname !== '/admin/login';
-    const redirectUrl = isDirectTamper ? '/admin/login?tampered=1' : '/admin/login';
-    return <Navigate to={redirectUrl} replace state={{ from: location }} />;
+    return <Navigate to="/admin/login" replace state={{ from: location }} />;
   }
 
   return <>{children}</>;
