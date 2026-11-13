@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Search, Copy, Check, ExternalLink, X, Monitor, Download, Play, QrCode, Mail } from 'lucide-react';
+import { Plus, Search, X, Monitor, Download, Play, QrCode, Mail } from 'lucide-react';
 import {
   fetchAdminBuyers,
   fetchAdminKiosks,
@@ -39,21 +39,6 @@ export const BuyerManagementPage: React.FC = () => {
   const [dedicatedKioskAddress, setDedicatedKioskAddress] = useState<string>('');
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState<boolean>(false);
-
-  const [inviteModalData, setInviteModalData] = useState<{
-    buyerName: string;
-    buyerEmail: string;
-    setupUrl: string;
-    expiresAt: string;
-    dedicatedKiosk?: {
-      id: string;
-      name: string;
-      city?: string;
-      address?: string;
-      launcherUrl?: string;
-    } | null;
-  } | null>(null);
-  const [copied, setCopied] = useState<boolean>(false);
 
   const [confirmStatusBuyer, setConfirmStatusBuyer] = useState<AdminBuyer | null>(null);
   const [toggling, setToggling] = useState<boolean>(false);
@@ -171,19 +156,17 @@ export const BuyerManagementPage: React.FC = () => {
   const handleSendInvite = async (buyer: AdminBuyer) => {
     try {
       const res = await regenerateBuyerInvite(buyer.id);
-      const fullSetupUrl = `${window.location.origin}${res.invitation.setupPath}`;
-      setCopied(false);
-      setInviteModalData({
-        buyerName: buyer.fullName,
-        buyerEmail: buyer.email,
-        setupUrl: fullSetupUrl,
-        expiresAt: res.invitation.expiresAt,
+      setFeedback({
+        type: 'success',
+        message:
+          res.message ||
+          `An invitation email with setup instructions was sent to ${buyer.email}.`,
       });
       await loadData();
     } catch (err: any) {
       setFeedback({
         type: 'error',
-        message: err.message || 'Could not generate invite link.',
+        message: err.message || 'Could not send invitation email.',
       });
     }
   };
@@ -206,17 +189,6 @@ export const BuyerManagementPage: React.FC = () => {
       });
     } finally {
       setToggling(false);
-    }
-  };
-
-  const copyInviteLink = async () => {
-    if (!inviteModalData) return;
-    try {
-      await navigator.clipboard.writeText(inviteModalData.setupUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    } catch {
-      // Ignore
     }
   };
 
@@ -709,158 +681,10 @@ export const BuyerManagementPage: React.FC = () => {
                   disabled={saving}
                   className="rounded-full bg-neutral-950 px-5 py-2 text-xs font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
                 >
-                  {saving ? 'Saving...' : editingBuyer ? 'Save' : 'Create & Get Link'}
+                  {saving ? 'Saving...' : editingBuyer ? 'Save' : 'Create Owner'}
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Setup Link Modal */}
-      {inviteModalData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/40 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-lg rounded-2xl border border-neutral-200 bg-white p-6 shadow-xl">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h3 className="font-display text-lg font-bold text-neutral-950">
-                  Account &amp; Kiosk Ready
-                </h3>
-                <p className="mt-0.5 text-xs text-neutral-500">
-                  Share the setup link with {inviteModalData.buyerName} and test their dedicated kiosk.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setInviteModalData(null)}
-                className="rounded-full p-1 text-neutral-400 hover:bg-neutral-100"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            {/* Email Notification Banner */}
-            <div className="mt-4 flex items-center gap-2 rounded-xl border border-sky-200 bg-sky-50/70 p-3 text-xs text-sky-900">
-              <Mail className="h-4 w-4 shrink-0 text-sky-700" />
-              <span>
-                An invitation email with this setup link was dispatched to <strong>{inviteModalData.buyerEmail}</strong>.
-              </span>
-            </div>
-
-            {/* Owner Setup Link */}
-            <div className="mt-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3.5 text-xs">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
-                Owner Setup Link
-              </p>
-              <p className="mt-1 break-all font-mono text-[11px] text-neutral-800">
-                {inviteModalData.setupUrl}
-              </p>
-
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={copyInviteLink}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-neutral-950 px-4 py-1.5 text-xs font-medium text-white hover:bg-neutral-800"
-                >
-                  {copied ? (
-                    <>
-                      <Check className="h-3.5 w-3.5" /> Copied
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-3.5 w-3.5" /> Copy link
-                    </>
-                  )}
-                </button>
-
-                <a
-                  href={inviteModalData.setupUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-4 py-1.5 text-xs font-medium text-neutral-700 hover:border-neutral-950"
-                >
-                  <ExternalLink className="h-3.5 w-3.5" />
-                  Open setup page
-                </a>
-              </div>
-            </div>
-
-            {/* Dedicated Kiosk Card if provisioned */}
-            {inviteModalData.dedicatedKiosk && (
-              <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-900">
-                    <Monitor className="h-4 w-4 text-emerald-700" />
-                    Dedicated Kiosk Provisioned
-                  </span>
-                  <span className="rounded-md border border-emerald-300 bg-white px-2 py-0.5 font-mono text-[11px] font-bold text-emerald-800">
-                    {inviteModalData.dedicatedKiosk.id}
-                  </span>
-                </div>
-
-                <p className="mt-1 text-[11px] text-emerald-800">
-                  {inviteModalData.dedicatedKiosk.name} &bull; {inviteModalData.dedicatedKiosk.city || 'Metro Manila'}
-                </p>
-
-                <p className="mt-2 text-[11px] text-neutral-600">
-                  Orders submitted through this kiosk will route directly to <strong>{inviteModalData.buyerName}</strong>'s monitoring dashboard.
-                </p>
-
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <a
-                    href={getKioskLaunchUrl(
-                      inviteModalData.dedicatedKiosk.id,
-                      inviteModalData.dedicatedKiosk.launcherUrl
-                    )}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-full bg-emerald-700 px-4 py-1.5 text-xs font-medium text-white hover:bg-emerald-800 shadow-xs"
-                  >
-                    <Play className="h-3.5 w-3.5 fill-white" />
-                    Launch Kiosk App
-                  </a>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      downloadKioskWindowsLauncher(
-                        inviteModalData.dedicatedKiosk!.id,
-                        inviteModalData.buyerName
-                      )
-                    }
-                    className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-white px-4 py-1.5 text-xs font-medium text-emerald-900 hover:bg-emerald-100"
-                  >
-                    <Download className="h-3.5 w-3.5" />
-                    Download Windows Launcher (.bat)
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setTabletQrTarget({
-                        kioskId: inviteModalData.dedicatedKiosk!.id,
-                        kioskName: inviteModalData.dedicatedKiosk!.name,
-                        ownerName: inviteModalData.buyerName,
-                      })
-                    }
-                    className="inline-flex items-center gap-1.5 rounded-full border border-petrol-300 bg-white px-4 py-1.5 text-xs font-medium text-petrol-900 hover:bg-petrol-50"
-                  >
-                    <QrCode className="h-3.5 w-3.5 text-petrol-700" />
-                    Scan for Tablet
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <div className="mt-5 flex justify-end border-t border-neutral-100 pt-4">
-              <button
-                type="button"
-                onClick={() => setInviteModalData(null)}
-                className="rounded-full bg-neutral-950 px-5 py-2 text-xs font-medium text-white hover:bg-neutral-800"
-              >
-                Done
-              </button>
-            </div>
           </div>
         </div>
       )}
