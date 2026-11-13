@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Search, Copy, Check, ExternalLink, X, Monitor, Download, Play, QrCode } from 'lucide-react';
+import { Plus, Search, Copy, Check, ExternalLink, X, Monitor, Download, Play, QrCode, Mail } from 'lucide-react';
 import {
   fetchAdminBuyers,
   fetchAdminKiosks,
@@ -228,7 +228,12 @@ export const BuyerManagementPage: React.FC = () => {
   const unassignedKiosks = kiosks.filter((k) => !k.owner);
 
   const filteredBuyers = buyers.filter((b) => {
-    if (statusFilter !== 'all' && b.accountStatus !== statusFilter) return false;
+    const isDone = Boolean(b.isSetupComplete || b.setupStatus === 'done' || b.accountStatus === 'active');
+    if (statusFilter === 'done' && !isDone) return false;
+    if (statusFilter === 'not_done' && isDone) return false;
+    if (statusFilter === 'active' && b.accountStatus !== 'active') return false;
+    if (statusFilter === 'invited' && b.accountStatus !== 'invited') return false;
+    if (statusFilter === 'deactivated' && b.accountStatus !== 'deactivated') return false;
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       const hay = `${b.fullName} ${b.email} ${b.username} ${b.companyName} ${b.phone}`.toLowerCase();
@@ -298,8 +303,8 @@ export const BuyerManagementPage: React.FC = () => {
           className="rounded-xl border border-neutral-200 bg-white px-3.5 py-2 text-xs font-medium text-neutral-700 focus:border-neutral-950 focus:outline-hidden"
         >
           <option value="all">All accounts ({buyers.length})</option>
-          <option value="active">Active</option>
-          <option value="invited">Invited</option>
+          <option value="done">Setup Done</option>
+          <option value="not_done">Setup Not Done (Pending)</option>
           <option value="deactivated">Deactivated</option>
         </select>
       </div>
@@ -312,7 +317,7 @@ export const BuyerManagementPage: React.FC = () => {
               <tr className="border-b border-neutral-200 bg-neutral-50/60 text-neutral-400">
                 <th className="px-5 py-3 font-medium">Buyer</th>
                 <th className="px-4 py-3 font-medium">Company &amp; Phone</th>
-                <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium">Setup Status</th>
                 <th className="px-4 py-3 font-medium">Assigned Kiosks</th>
                 <th className="px-5 py-3 text-right font-medium">Actions</th>
               </tr>
@@ -331,125 +336,144 @@ export const BuyerManagementPage: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                filteredBuyers.map((buyer) => (
-                  <tr key={buyer.id} className="hover:bg-neutral-50/70">
-                    <td className="px-5 py-3.5">
-                      <p className="font-semibold text-neutral-950">
-                        {buyer.fullName}
-                      </p>
-                      <p className="text-neutral-500">{buyer.email}</p>
-                      <p className="font-mono text-[11px] text-neutral-400">
-                        @{buyer.username}
-                      </p>
-                    </td>
+                filteredBuyers.map((buyer) => {
+                  const isSetupDone = Boolean(
+                    buyer.isSetupComplete ||
+                    buyer.setupStatus === 'done' ||
+                    buyer.accountStatus === 'active'
+                  );
 
-                    <td className="px-4 py-3.5">
-                      <p className="text-neutral-800">
-                        {buyer.companyName || 'Independent'}
-                      </p>
-                      <p className="text-[11px] text-neutral-400">
-                        {buyer.phone || 'No phone'}
-                      </p>
-                    </td>
+                  return (
+                    <tr key={buyer.id} className="hover:bg-neutral-50/70">
+                      <td className="px-5 py-3.5">
+                        <p className="font-semibold text-neutral-950">
+                          {buyer.fullName}
+                        </p>
+                        <p className="text-neutral-500">{buyer.email}</p>
+                        <p className="font-mono text-[11px] text-neutral-400">
+                          @{buyer.username}
+                        </p>
+                      </td>
 
-                    <td className="px-4 py-3.5">
-                      <StatusBadge
-                        status={buyer.accountStatus}
-                        type="account"
-                        size="sm"
-                      />
-                    </td>
+                      <td className="px-4 py-3.5">
+                        <p className="text-neutral-800">
+                          {buyer.companyName || 'Independent'}
+                        </p>
+                        <p className="text-[11px] text-neutral-400">
+                          {buyer.phone || 'No phone'}
+                        </p>
+                      </td>
 
-                    <td className="px-4 py-3.5">
-                      {buyer.assignedKiosks.length > 0 ? (
-                        <div className="flex flex-col gap-1.5">
-                          {buyer.assignedKiosks.map((k) => {
-                            const kioskUrl = getKioskLaunchUrl(k.id, k.launcherUrl);
-                            return (
-                              <div
-                                key={k.id}
-                                className="inline-flex items-center justify-between gap-2 rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-xs"
-                              >
-                                <div className="flex items-center gap-1.5 min-w-0">
-                                  <Monitor className="h-3.5 w-3.5 text-neutral-400 shrink-0" />
-                                  <span className="font-mono font-medium text-neutral-900 truncate">
-                                    {k.id}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-1 shrink-0">
-                                  <a
-                                    href={kioskUrl}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    title={`Launch Kiosk ${k.id} in Browser`}
-                                    className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-white px-2 py-0.5 text-[11px] font-medium text-neutral-700 shadow-2xs hover:bg-neutral-100"
-                                  >
-                                    <Play className="h-2.5 w-2.5 fill-emerald-600 text-emerald-600" />
-                                    Launch
-                                  </a>
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      downloadKioskWindowsLauncher(k.id, buyer.fullName)
-                                    }
-                                    title={`Download Windows Launcher (.bat) for ${k.id}`}
-                                    className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-white px-2 py-0.5 text-[11px] font-medium text-neutral-700 shadow-2xs hover:bg-neutral-100"
-                                  >
-                                    <Download className="h-2.5 w-2.5 text-neutral-600" />
-                                    .bat
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      setTabletQrTarget({
-                                        kioskId: k.id,
-                                        kioskName: k.name,
-                                        ownerName: buyer.fullName,
-                                      })
-                                    }
-                                    title={`Scan QR Code to open ${k.id} on iPad / Tablet`}
-                                    className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-white px-2 py-0.5 text-[11px] font-medium text-petrol-700 shadow-2xs hover:bg-neutral-100"
-                                  >
-                                    <QrCode className="h-2.5 w-2.5" />
-                                    Tablet QR
-                                  </button>
-                                </div>
-                              </div>
-                            );
-                          })}
+                      <td className="px-4 py-3.5">
+                        <div className="flex flex-col gap-1 items-start">
+                          <StatusBadge
+                            status={isSetupDone ? 'done' : 'not_done'}
+                            type="setup"
+                            size="sm"
+                          />
+                          {!buyer.isActive && (
+                            <span className="inline-flex items-center rounded-md bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-500">
+                              Deactivated
+                            </span>
+                          )}
                         </div>
-                      ) : (
-                        <span className="text-neutral-400">None</span>
-                      )}
-                    </td>
+                      </td>
 
-                    <td className="px-5 py-3.5 text-right">
-                      <div className="inline-flex flex-wrap items-center justify-end gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => handleSendInvite(buyer)}
-                          className="rounded-full border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-800 hover:border-neutral-950"
-                        >
-                          Setup Link
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => openEditModal(buyer)}
-                          className="rounded-full border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-700 hover:border-neutral-950"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setConfirmStatusBuyer(buyer)}
-                          className="rounded-full border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-600 hover:border-neutral-950"
-                        >
-                          {buyer.isActive ? 'Deactivate' : 'Activate'}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                      <td className="px-4 py-3.5">
+                        {buyer.assignedKiosks.length > 0 ? (
+                          <div className="flex flex-col gap-1.5">
+                            {buyer.assignedKiosks.map((k) => {
+                              const kioskUrl = getKioskLaunchUrl(k.id, k.launcherUrl);
+                              return (
+                                <div
+                                  key={k.id}
+                                  className="inline-flex items-center justify-between gap-2 rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-xs"
+                                >
+                                  <div className="flex items-center gap-1.5 min-w-0">
+                                    <Monitor className="h-3.5 w-3.5 text-neutral-400 shrink-0" />
+                                    <span className="font-mono font-medium text-neutral-900 truncate">
+                                      {k.id}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1 shrink-0">
+                                    <a
+                                      href={kioskUrl}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      title={`Launch Kiosk ${k.id} in Browser`}
+                                      className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-white px-2 py-0.5 text-[11px] font-medium text-neutral-700 shadow-2xs hover:bg-neutral-100"
+                                    >
+                                      <Play className="h-2.5 w-2.5 fill-emerald-600 text-emerald-600" />
+                                      Launch
+                                    </a>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        downloadKioskWindowsLauncher(k.id, buyer.fullName)
+                                      }
+                                      title={`Download Windows Launcher (.bat) for ${k.id}`}
+                                      className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-white px-2 py-0.5 text-[11px] font-medium text-neutral-700 shadow-2xs hover:bg-neutral-100"
+                                    >
+                                      <Download className="h-2.5 w-2.5 text-neutral-600" />
+                                      .bat
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setTabletQrTarget({
+                                          kioskId: k.id,
+                                          kioskName: k.name,
+                                          ownerName: buyer.fullName,
+                                        })
+                                      }
+                                      title={`Scan QR Code to open ${k.id} on iPad / Tablet`}
+                                      className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-white px-2 py-0.5 text-[11px] font-medium text-petrol-700 shadow-2xs hover:bg-neutral-100"
+                                    >
+                                      <QrCode className="h-2.5 w-2.5" />
+                                      Tablet QR
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <span className="text-neutral-400">None</span>
+                        )}
+                      </td>
+
+                      <td className="px-5 py-3.5 text-right">
+                        <div className="inline-flex flex-wrap items-center justify-end gap-1.5">
+                          {!isSetupDone && (
+                            <button
+                              type="button"
+                              onClick={() => handleSendInvite(buyer)}
+                              className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50/70 px-3 py-1 text-xs font-medium text-amber-900 hover:bg-amber-100 transition"
+                              title="Resend invitation email with setup link"
+                            >
+                              <Mail className="h-3 w-3 text-amber-700" />
+                              Resend Invite
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => openEditModal(buyer)}
+                            className="rounded-full border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-700 hover:border-neutral-950"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmStatusBuyer(buyer)}
+                            className="rounded-full border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-600 hover:border-neutral-950"
+                          >
+                            {buyer.isActive ? 'Deactivate' : 'Activate'}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -720,8 +744,16 @@ export const BuyerManagementPage: React.FC = () => {
               </button>
             </div>
 
+            {/* Email Notification Banner */}
+            <div className="mt-4 flex items-center gap-2 rounded-xl border border-sky-200 bg-sky-50/70 p-3 text-xs text-sky-900">
+              <Mail className="h-4 w-4 shrink-0 text-sky-700" />
+              <span>
+                An invitation email with this setup link was dispatched to <strong>{inviteModalData.buyerEmail}</strong>.
+              </span>
+            </div>
+
             {/* Owner Setup Link */}
-            <div className="mt-4 rounded-xl border border-neutral-200 bg-neutral-50 p-3.5 text-xs">
+            <div className="mt-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3.5 text-xs">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
                 Owner Setup Link
               </p>

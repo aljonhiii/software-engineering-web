@@ -89,6 +89,8 @@ export interface AdminBuyer {
   role: string;
   isActive: boolean;
   accountStatus: 'invited' | 'active' | 'deactivated';
+  isSetupComplete?: boolean;
+  setupStatus?: 'done' | 'not_done';
   inviteExpiresAt: string | null;
   assignedKiosksCount: number;
   assignedKiosks: BuyerAssignedKioskSummary[];

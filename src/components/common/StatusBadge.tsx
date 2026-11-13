@@ -2,7 +2,7 @@ import React from 'react';
 
 interface StatusBadgeProps {
   status: string;
-  type?: 'kiosk' | 'account' | 'boolean';
+  type?: 'kiosk' | 'account' | 'boolean' | 'setup';
   size?: 'sm' | 'md';
 }
 
@@ -52,6 +52,20 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
       badgeClasses = 'bg-neutral-100 text-neutral-600 border-neutral-200';
       dotClasses = 'bg-neutral-400';
       label = 'Deactivated';
+    }
+  } else if (type === 'setup') {
+    if (norm === 'done' || norm === 'active') {
+      badgeClasses = 'bg-emerald-50 text-emerald-800 border-emerald-200';
+      dotClasses = 'bg-emerald-500';
+      label = 'Done';
+    } else if (norm === 'not_done' || norm === 'invited') {
+      badgeClasses = 'bg-amber-50 text-amber-800 border-amber-200';
+      dotClasses = 'bg-amber-500';
+      label = 'Not Done';
+    } else {
+      badgeClasses = 'bg-neutral-100 text-neutral-600 border-neutral-200';
+      dotClasses = 'bg-neutral-400';
+      label = status || 'Unknown';
     }
   }
 

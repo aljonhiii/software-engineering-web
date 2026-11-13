@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { ArrowLeft, Eye, EyeOff, Monitor, Download, Play, QrCode } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, Monitor, Download, Play, QrCode, CheckCircle2, Check } from 'lucide-react';
 import {
   verifyInvitationToken,
   completeBuyerAccountSetup,
@@ -17,6 +17,7 @@ export const BuyerSetupPage: React.FC = () => {
   const [invitation, setInvitation] = useState<BuyerInvitationInfo | null>(null);
   const [verifying, setVerifying] = useState<boolean>(true);
   const [verifyError, setVerifyError] = useState<string | null>(null);
+  const [isAlreadyDone, setIsAlreadyDone] = useState<boolean>(false);
 
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
@@ -33,7 +34,7 @@ export const BuyerSetupPage: React.FC = () => {
   useEffect(() => {
     async function checkToken() {
       if (!token) {
-        setVerifyError('Open the invitation link sent by your administrator.');
+        setVerifyError('Open the invitation link sent to your email.');
         setVerifying(false);
         return;
       }
@@ -44,9 +45,19 @@ export const BuyerSetupPage: React.FC = () => {
           setInvitation(res.invitation);
         }
       } catch (err: any) {
-        setVerifyError(
-          err.message || 'This invitation link is invalid or expired.'
-        );
+        const msg = String(err.message || '');
+        if (
+          msg.toLowerCase().includes('already') ||
+          msg.toLowerCase().includes('completed') ||
+          err.code === 'INVALID_OR_USED' ||
+          err.code === 'ALREADY_COMPLETED'
+        ) {
+          setIsAlreadyDone(true);
+        } else {
+          setVerifyError(
+            err.message || 'This invitation link is invalid or expired.'
+          );
+        }
       } finally {
         setVerifying(false);
       }
@@ -118,6 +129,24 @@ export const BuyerSetupPage: React.FC = () => {
               <div className="py-8 text-center text-xs text-neutral-500">
                 Checking invitation link...
               </div>
+            ) : isAlreadyDone ? (
+              <div className="space-y-4">
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 text-xs text-emerald-950">
+                  <div className="flex items-center gap-2 font-semibold text-emerald-900">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                    Setup Already Completed (Done)
+                  </div>
+                  <p className="mt-1 text-emerald-800 leading-relaxed">
+                    This account setup has already been completed and is active. You can log into the KixCleen Monitoring Mobile App directly with your credentials.
+                  </p>
+                </div>
+                <Link
+                  to="/"
+                  className="inline-flex w-full items-center justify-center rounded-full bg-neutral-950 px-5 py-2.5 text-xs font-medium text-white hover:bg-neutral-800"
+                >
+                  Return to Home
+                </Link>
+              </div>
             ) : verifyError ? (
               <div className="space-y-4">
                 <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-xs text-neutral-600">
@@ -132,6 +161,12 @@ export const BuyerSetupPage: React.FC = () => {
               </div>
             ) : completed && invitation ? (
               <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-100/70 px-3 py-0.5 text-xs font-bold text-emerald-900">
+                    <Check className="h-3 w-3 text-emerald-700" />
+                    Setup Done
+                  </span>
+                </div>
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs text-emerald-900">
                   Your account is active. You can now sign in on the KixCleen mobile app.
                 </div>
