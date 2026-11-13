@@ -8,6 +8,7 @@ import {
   toggleAdminBuyerStatus,
   regenerateBuyerInvite,
   downloadKioskWindowsLauncher,
+  KIOSK_APP_URL,
 } from '../../api/client';
 import { AdminBuyer, AdminKiosk } from '../../types';
 import { StatusBadge } from '../../components/common/StatusBadge';
@@ -358,7 +359,7 @@ export const BuyerManagementPage: React.FC = () => {
                           {buyer.assignedKiosks.map((k) => {
                             const kioskUrl =
                               k.launcherUrl ||
-                              `http://localhost:8082/?kioskId=${encodeURIComponent(k.id)}`;
+                              `${KIOSK_APP_URL}/?kioskId=${encodeURIComponent(k.id)}`;
                             return (
                               <div
                                 key={k.id}
@@ -762,7 +763,7 @@ export const BuyerManagementPage: React.FC = () => {
                   <a
                     href={
                       inviteModalData.dedicatedKiosk.launcherUrl ||
-                      `http://localhost:8082/?kioskId=${encodeURIComponent(inviteModalData.dedicatedKiosk.id)}`
+                      `${KIOSK_APP_URL}/?kioskId=${encodeURIComponent(inviteModalData.dedicatedKiosk.id)}`
                     }
                     target="_blank"
                     rel="noreferrer"

@@ -279,12 +279,16 @@ export async function createAdminBuyer(payload: {
   });
 }
 
+export const KIOSK_APP_URL =
+  (import.meta.env.VITE_KIOSK_URL as string) || 'http://localhost:8081';
+
 /**
- * Downloads a pre-configured Windows .bat script that launches the dedicated Kiosk Web Terminal.
+ * Downloads a pre-configured Windows .bat script that launches the dedicated Kiosk Web Terminal (Shoeclean).
  */
 export function downloadKioskWindowsLauncher(kioskId: string, ownerName?: string): void {
   const cleanId = (kioskId || 'KIOSK-01-MAIN').trim().toUpperCase();
   const label = ownerName ? ` - ${ownerName}` : '';
+  const kioskTargetUrl = `${KIOSK_APP_URL}/?kioskId=${encodeURIComponent(cleanId)}`;
   const batContent = `@echo off
 title KixCleen Kiosk Software${label} [%KIOSK_ID%]
 echo ========================================================
@@ -293,10 +297,10 @@ echo   Assigned Kiosk ID: ${cleanId}
 echo   Owner Account: ${ownerName || 'Authorized Operator'}
 echo ========================================================
 echo.
-echo Launching Kiosk Software in default browser...
-start "" "http://localhost:8082/?kioskId=${cleanId}"
+echo Launching Shoeclean Kiosk Software in default browser...
+start "" "${kioskTargetUrl}"
 echo.
-echo Terminal running at http://localhost:8082/?kioskId=${cleanId}
+echo Terminal running at ${kioskTargetUrl}
 echo You can keep this window open or close it.
 `;
 
