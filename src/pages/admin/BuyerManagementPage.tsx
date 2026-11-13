@@ -8,7 +8,7 @@ import {
   toggleAdminBuyerStatus,
   regenerateBuyerInvite,
   downloadKioskWindowsLauncher,
-  KIOSK_APP_URL,
+  getKioskLaunchUrl,
 } from '../../api/client';
 import { AdminBuyer, AdminKiosk } from '../../types';
 import { StatusBadge } from '../../components/common/StatusBadge';
@@ -357,9 +357,7 @@ export const BuyerManagementPage: React.FC = () => {
                       {buyer.assignedKiosks.length > 0 ? (
                         <div className="flex flex-col gap-1.5">
                           {buyer.assignedKiosks.map((k) => {
-                            const kioskUrl =
-                              k.launcherUrl ||
-                              `${KIOSK_APP_URL}/?kioskId=${encodeURIComponent(k.id)}`;
+                            const kioskUrl = getKioskLaunchUrl(k.id, k.launcherUrl);
                             return (
                               <div
                                 key={k.id}
@@ -761,10 +759,10 @@ export const BuyerManagementPage: React.FC = () => {
 
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <a
-                    href={
-                      inviteModalData.dedicatedKiosk.launcherUrl ||
-                      `${KIOSK_APP_URL}/?kioskId=${encodeURIComponent(inviteModalData.dedicatedKiosk.id)}`
-                    }
+                    href={getKioskLaunchUrl(
+                      inviteModalData.dedicatedKiosk.id,
+                      inviteModalData.dedicatedKiosk.launcherUrl
+                    )}
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex items-center gap-1.5 rounded-full bg-emerald-700 px-4 py-1.5 text-xs font-medium text-white hover:bg-emerald-800 shadow-xs"

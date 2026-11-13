@@ -5,7 +5,7 @@ import {
   verifyInvitationToken,
   completeBuyerAccountSetup,
   downloadKioskWindowsLauncher,
-  KIOSK_APP_URL,
+  getKioskLaunchUrl,
 } from '../../api/client';
 import { BuyerInvitationInfo } from '../../types';
 
@@ -158,9 +158,7 @@ export const BuyerSetupPage: React.FC = () => {
 
                     <div className="space-y-2">
                       {invitation.assignedKiosks.map((k) => {
-                        const kioskUrl =
-                          k.launcherUrl ||
-                          `${KIOSK_APP_URL}/?kioskId=${encodeURIComponent(k.id)}`;
+                        const kioskUrl = getKioskLaunchUrl(k.id, k.launcherUrl);
                         return (
                           <div
                             key={k.id}
@@ -210,7 +208,7 @@ export const BuyerSetupPage: React.FC = () => {
                     </div>
                     <div className="space-y-2">
                       {invitation.assignedKioskIds.map((kId) => {
-                        const kioskUrl = `${KIOSK_APP_URL}/?kioskId=${encodeURIComponent(kId)}`;
+                        const kioskUrl = getKioskLaunchUrl(kId);
                         return (
                           <div
                             key={kId}

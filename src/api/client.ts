@@ -279,16 +279,27 @@ export async function createAdminBuyer(payload: {
   });
 }
 
-export const KIOSK_APP_URL =
-  (import.meta.env.VITE_KIOSK_URL as string) || 'http://localhost:8081';
+export const KIOSK_LAUNCHER_URL = `${API_BASE_URL}/launcher/kiosk`;
+export const KIOSK_APP_URL = KIOSK_LAUNCHER_URL;
 
 /**
- * Downloads a pre-configured Windows .bat script that launches the dedicated Kiosk Web Terminal (Shoeclean).
+ * Returns the dynamic auto-discovery launcher URL for a given kiosk ID.
+ * This URL routes to the backend launcher which detects Shoeclean across all ports.
+ */
+export function getKioskLaunchUrl(kioskId: string, directUrl?: string): string {
+  if (directUrl && directUrl.includes('/launcher/kiosk')) return directUrl;
+  const cleanId = encodeURIComponent((kioskId || 'KIOSK-01-MAIN').trim().toUpperCase());
+  return `${API_BASE_URL}/launcher/kiosk?kioskId=${cleanId}`;
+}
+
+/**
+ * Downloads a pre-configured Windows .bat script that dynamically launches the dedicated Kiosk Web Terminal (Shoeclean).
+ * Auto-detects the active Shoeclean port so it NEVER breaks if Expo changes ports.
  */
 export function downloadKioskWindowsLauncher(kioskId: string, ownerName?: string): void {
   const cleanId = (kioskId || 'KIOSK-01-MAIN').trim().toUpperCase();
   const label = ownerName ? ` - ${ownerName}` : '';
-  const kioskTargetUrl = `${KIOSK_APP_URL}/?kioskId=${encodeURIComponent(cleanId)}`;
+  const launcherUrl = getKioskLaunchUrl(cleanId);
   const batContent = `@echo off
 title KixCleen Kiosk Software${label} [%KIOSK_ID%]
 echo ========================================================
@@ -297,10 +308,11 @@ echo   Assigned Kiosk ID: ${cleanId}
 echo   Owner Account: ${ownerName || 'Authorized Operator'}
 echo ========================================================
 echo.
-echo Launching Shoeclean Kiosk Software in default browser...
-start "" "${kioskTargetUrl}"
+echo Connecting to Shoeclean Kiosk Terminal...
+echo Auto-detecting active terminal port...
+start "" "${launcherUrl}"
 echo.
-echo Terminal running at ${kioskTargetUrl}
+echo Connected via dynamic launcher: ${launcherUrl}
 echo You can keep this window open or close it.
 `;
 
