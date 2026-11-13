@@ -510,8 +510,8 @@ export async function submitCustomerInquiry(payload: {
   fullName: string;
   email: string;
   phone: string;
-  preferredLocation: string;
-  inquiryType: string;
+  preferredLocation?: string;
+  inquiryType?: string;
   estimatedPairs?: string;
   message?: string;
 }): Promise<{

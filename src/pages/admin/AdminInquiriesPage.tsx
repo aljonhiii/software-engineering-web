@@ -314,7 +314,7 @@ export const AdminInquiriesPage: React.FC = () => {
                 </div>
 
                 {/* Details Grid */}
-                <div className="mt-4 grid grid-cols-1 gap-2.5 rounded-xl border border-neutral-100 bg-neutral-50/60 p-3.5 sm:grid-cols-3 text-xs">
+                <div className={`mt-4 grid grid-cols-1 gap-2.5 rounded-xl border border-neutral-100 bg-neutral-50/60 p-3.5 text-xs ${inq.preferredLocation ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
                   <div className="flex items-center gap-2">
                     <Phone className="h-3.5 w-3.5 text-neutral-400 shrink-0" />
                     <div>
@@ -341,28 +341,34 @@ export const AdminInquiriesPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-3.5 w-3.5 text-neutral-400 shrink-0" />
-                    <div>
-                      <p className="text-[10px] text-neutral-400">Location</p>
-                      <p className="font-medium text-neutral-900">
-                        {inq.preferredLocation}
-                      </p>
+                  {Boolean(inq.preferredLocation) && (
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-3.5 w-3.5 text-neutral-400 shrink-0" />
+                      <div>
+                        <p className="text-[10px] text-neutral-400">Location</p>
+                        <p className="font-medium text-neutral-900">
+                          {inq.preferredLocation}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </div>
-
-                {/* Inquiry Service & Message */}
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-                  <span className="rounded-md border border-neutral-200 bg-white px-2.5 py-0.5 font-medium text-neutral-700">
-                    {inq.inquiryType}
-                  </span>
-                  {inq.estimatedPairs && (
-                    <span className="rounded-md border border-neutral-200 bg-white px-2.5 py-0.5 text-neutral-600">
-                      Quantity: <strong>{inq.estimatedPairs}</strong>
-                    </span>
                   )}
                 </div>
+
+                {/* Optional Service / Quantity Tags */}
+                {(inq.inquiryType || inq.estimatedPairs) && (
+                  <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                    {inq.inquiryType && inq.inquiryType !== 'General Inquiry' && (
+                      <span className="rounded-md border border-neutral-200 bg-white px-2.5 py-0.5 font-medium text-neutral-700">
+                        {inq.inquiryType}
+                      </span>
+                    )}
+                    {inq.estimatedPairs && (
+                      <span className="rounded-md border border-neutral-200 bg-white px-2.5 py-0.5 text-neutral-600">
+                        Quantity: <strong>{inq.estimatedPairs}</strong>
+                      </span>
+                    )}
+                  </div>
+                )}
 
                 {inq.message && (
                   <div className="mt-3 rounded-xl border border-neutral-200 bg-white p-3 text-xs text-neutral-700 leading-relaxed">

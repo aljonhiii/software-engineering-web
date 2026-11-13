@@ -164,9 +164,6 @@ export const KioskLocatorPage: React.FC = () => {
   const [inqName, setInqName] = useState<string>('');
   const [inqPhone, setInqPhone] = useState<string>('');
   const [inqEmail, setInqEmail] = useState<string>('');
-  const [inqLocation, setInqLocation] = useState<string>('KCC Mall de Zamboanga (Camino Nuevo)');
-  const [inqType, setInqType] = useState<string>('Order Shoe Cleaning Service');
-  const [inqPairs, setInqPairs] = useState<string>('1-2 Pairs');
   const [inqMessage, setInqMessage] = useState<string>('');
   const [inqSubmitting, setInqSubmitting] = useState<boolean>(false);
   const [inqSuccess, setInqSuccess] = useState<string | null>(null);
@@ -188,15 +185,12 @@ export const KioskLocatorPage: React.FC = () => {
         fullName: inqName.trim(),
         phone: inqPhone.trim(),
         email: inqEmail.trim(),
-        preferredLocation: inqLocation,
-        inquiryType: inqType,
-        estimatedPairs: inqPairs,
         message: inqMessage.trim() || undefined,
       });
 
       if (res.success) {
         setInqSuccess(
-          `Thank you, ${inqName.trim()}! Your order request (${res.inquiry.id}) was received. Our Zamboanga City team will reach out to you shortly.`
+          `Thank you, ${inqName.trim()}! Your message (${res.inquiry.id}) was received. Our Zamboanga City team will reach out to you shortly.`
         );
         setInqName('');
         setInqPhone('');
@@ -1124,88 +1118,30 @@ export const KioskLocatorPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      <div>
-                        <label className="block text-xs font-medium text-neutral-700">
-                          Email Address <span className="text-rose-500">*</span>
-                        </label>
-                        <input
-                          type="email"
-                          required
-                          value={inqEmail}
-                          onChange={(e) => setInqEmail(e.target.value)}
-                          placeholder="maria@example.com"
-                          className="mt-1 w-full rounded-xl border border-neutral-200 bg-neutral-50/50 px-3.5 py-2 text-xs text-neutral-900 focus:border-neutral-950 focus:bg-white focus:outline-hidden"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-medium text-neutral-700">
-                          Preferred Zamboanga Location
-                        </label>
-                        <select
-                          value={inqLocation}
-                          onChange={(e) => setInqLocation(e.target.value)}
-                          className="mt-1 w-full rounded-xl border border-neutral-200 bg-neutral-50/50 px-3 py-2 text-xs text-neutral-900 focus:border-neutral-950 focus:bg-white focus:outline-hidden"
-                        >
-                          <option value="KCC Mall de Zamboanga (Camino Nuevo)">KCC Mall de Zamboanga (Camino Nuevo)</option>
-                          <option value="SM City Mindpro (La Purisima)">SM City Mindpro (La Purisima)</option>
-                          <option value="Paseo del Mar Promenade (Zone IV)">Paseo del Mar Promenade (Zone IV)</option>
-                          <option value="Yubenco Star Mall (Putik)">Yubenco Star Mall (Putik)</option>
-                          <option value="WMSU Campus / Baliwasan">WMSU Campus / Baliwasan</option>
-                          <option value="Zamboanga Int'l Airport (Canelar)">Zamboanga Int'l Airport (Canelar)</option>
-                          <option value="CityMall Tetuan (Don Alfaro)">CityMall Tetuan (Don Alfaro)</option>
-                          <option value="Santa Maria Commercial Center">Santa Maria Commercial Center</option>
-                          <option value="Other Location in Zamboanga City">Other Location in Zamboanga City</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      <div>
-                        <label className="block text-xs font-medium text-neutral-700">
-                          Inquiry / Order Type
-                        </label>
-                        <select
-                          value={inqType}
-                          onChange={(e) => setInqType(e.target.value)}
-                          className="mt-1 w-full rounded-xl border border-neutral-200 bg-neutral-50/50 px-3 py-2 text-xs text-neutral-900 focus:border-neutral-950 focus:bg-white focus:outline-hidden"
-                        >
-                          <option value="Order Shoe Cleaning Service">Order Shoe Cleaning Service</option>
-                          <option value="Request Kiosk Placement at My Property">Request Kiosk Placement at My Property</option>
-                          <option value="Kiosk Machine Purchase / Franchise">Kiosk Machine Purchase / Franchise</option>
-                          <option value="Commercial Fleet / Event Service">Commercial Fleet / Event Service</option>
-                          <option value="General Inquiry">General Inquiry</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-medium text-neutral-700">
-                          Estimated Shoe Quantity
-                        </label>
-                        <select
-                          value={inqPairs}
-                          onChange={(e) => setInqPairs(e.target.value)}
-                          className="mt-1 w-full rounded-xl border border-neutral-200 bg-neutral-50/50 px-3 py-2 text-xs text-neutral-900 focus:border-neutral-950 focus:bg-white focus:outline-hidden"
-                        >
-                          <option value="1-2 Pairs">1-2 Pairs</option>
-                          <option value="3-5 Pairs">3-5 Pairs</option>
-                          <option value="6-10 Pairs">6-10 Pairs</option>
-                          <option value="Batch / Wholesale (10+ Pairs)">Batch / Wholesale (10+ Pairs)</option>
-                          <option value="Not Applicable">Not Applicable</option>
-                        </select>
-                      </div>
+                    <div>
+                      <label className="block text-xs font-medium text-neutral-700">
+                        Email Address <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={inqEmail}
+                        onChange={(e) => setInqEmail(e.target.value)}
+                        placeholder="maria@example.com"
+                        className="mt-1 w-full rounded-xl border border-neutral-200 bg-neutral-50/50 px-3.5 py-2 text-xs text-neutral-900 focus:border-neutral-950 focus:bg-white focus:outline-hidden"
+                      />
                     </div>
 
                     <div>
                       <label className="block text-xs font-medium text-neutral-700">
-                        Notes or Specific Requests (Optional)
+                        Message <span className="text-rose-500">*</span>
                       </label>
                       <textarea
-                        rows={3}
+                        rows={4}
+                        required
                         value={inqMessage}
                         onChange={(e) => setInqMessage(e.target.value)}
-                        placeholder="Tell us about your shoes (e.g., leather dress shoes, white sneakers) or proposed machine placement..."
+                        placeholder="How can we help? Write your message, shoe cleaning details, or inquiry here..."
                         className="mt-1 w-full rounded-xl border border-neutral-200 bg-neutral-50/50 px-3.5 py-2 text-xs text-neutral-900 focus:border-neutral-950 focus:bg-white focus:outline-hidden"
                       />
                     </div>
@@ -1216,7 +1152,7 @@ export const KioskLocatorPage: React.FC = () => {
                       className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-neutral-950 py-3 text-xs font-semibold text-white hover:bg-neutral-800 disabled:opacity-50 transition shadow-xs"
                     >
                       <Send className="h-3.5 w-3.5" />
-                      {inqSubmitting ? 'Submitting Request...' : 'Submit Order Request'}
+                      {inqSubmitting ? 'Sending Message...' : 'Send Message'}
                     </button>
                   </form>
                 )}
