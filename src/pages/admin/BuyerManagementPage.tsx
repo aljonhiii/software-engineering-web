@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Search, Copy, Check, ExternalLink, X, Monitor, Download, Play } from 'lucide-react';
+import { Plus, Search, Copy, Check, ExternalLink, X, Monitor, Download, Play, QrCode } from 'lucide-react';
 import {
   fetchAdminBuyers,
   fetchAdminKiosks,
@@ -13,6 +13,7 @@ import {
 import { AdminBuyer, AdminKiosk } from '../../types';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { ConfirmModal } from '../../components/common/ConfirmModal';
+import { TabletQrModal } from '../../components/common/TabletQrModal';
 
 export const BuyerManagementPage: React.FC = () => {
   const [buyers, setBuyers] = useState<AdminBuyer[]>([]);
@@ -56,6 +57,12 @@ export const BuyerManagementPage: React.FC = () => {
 
   const [confirmStatusBuyer, setConfirmStatusBuyer] = useState<AdminBuyer | null>(null);
   const [toggling, setToggling] = useState<boolean>(false);
+
+  const [tabletQrTarget, setTabletQrTarget] = useState<{
+    kioskId: string;
+    kioskName?: string;
+    ownerName?: string;
+  } | null>(null);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -390,6 +397,21 @@ export const BuyerManagementPage: React.FC = () => {
                                   >
                                     <Download className="h-2.5 w-2.5 text-neutral-600" />
                                     .bat
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setTabletQrTarget({
+                                        kioskId: k.id,
+                                        kioskName: k.name,
+                                        ownerName: buyer.fullName,
+                                      })
+                                    }
+                                    title={`Scan QR Code to open ${k.id} on iPad / Tablet`}
+                                    className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-white px-2 py-0.5 text-[11px] font-medium text-petrol-700 shadow-2xs hover:bg-neutral-100"
+                                  >
+                                    <QrCode className="h-2.5 w-2.5" />
+                                    Tablet QR
                                   </button>
                                 </div>
                               </div>
@@ -784,6 +806,21 @@ export const BuyerManagementPage: React.FC = () => {
                     <Download className="h-3.5 w-3.5" />
                     Download Windows Launcher (.bat)
                   </button>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setTabletQrTarget({
+                        kioskId: inviteModalData.dedicatedKiosk!.id,
+                        kioskName: inviteModalData.dedicatedKiosk!.name,
+                        ownerName: inviteModalData.buyerName,
+                      })
+                    }
+                    className="inline-flex items-center gap-1.5 rounded-full border border-petrol-300 bg-white px-4 py-1.5 text-xs font-medium text-petrol-900 hover:bg-petrol-50"
+                  >
+                    <QrCode className="h-3.5 w-3.5 text-petrol-700" />
+                    Scan for Tablet
+                  </button>
                 </div>
               </div>
             )}
@@ -818,6 +855,14 @@ export const BuyerManagementPage: React.FC = () => {
         loading={toggling}
         onConfirm={handleConfirmToggleStatus}
         onCancel={() => setConfirmStatusBuyer(null)}
+      />
+
+      <TabletQrModal
+        open={Boolean(tabletQrTarget)}
+        onClose={() => setTabletQrTarget(null)}
+        kioskId={tabletQrTarget?.kioskId || ''}
+        kioskName={tabletQrTarget?.kioskName}
+        ownerName={tabletQrTarget?.ownerName}
       />
     </div>
   );

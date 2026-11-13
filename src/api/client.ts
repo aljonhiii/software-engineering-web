@@ -282,6 +282,28 @@ export async function createAdminBuyer(payload: {
 export const KIOSK_LAUNCHER_URL = `${API_BASE_URL}/launcher/kiosk`;
 export const KIOSK_APP_URL = KIOSK_LAUNCHER_URL;
 
+export async function fetchLauncherNetworkInfo(): Promise<{
+  success: boolean;
+  primaryIp: string;
+  lanBackendUrl: string;
+  lanKioskUrl: string;
+  launcherUrl: string;
+}> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/launcher/network-info`);
+    if (!res.ok) throw new Error('Failed to fetch network info');
+    return await res.json();
+  } catch {
+    return {
+      success: false,
+      primaryIp: '192.168.1.4',
+      lanBackendUrl: 'http://192.168.1.4:3000',
+      lanKioskUrl: 'http://192.168.1.4:8081',
+      launcherUrl: 'http://192.168.1.4:3000/api/launcher/kiosk',
+    };
+  }
+}
+
 /**
  * Returns the dynamic auto-discovery launcher URL for a given kiosk ID.
  * This URL routes to the backend launcher which detects Shoeclean across all ports.

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { ArrowLeft, Eye, EyeOff, Monitor, Download, Play } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, Monitor, Download, Play, QrCode } from 'lucide-react';
 import {
   verifyInvitationToken,
   completeBuyerAccountSetup,
@@ -8,6 +8,7 @@ import {
   getKioskLaunchUrl,
 } from '../../api/client';
 import { BuyerInvitationInfo } from '../../types';
+import { TabletQrModal } from '../../components/common/TabletQrModal';
 
 export const BuyerSetupPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -23,6 +24,11 @@ export const BuyerSetupPage: React.FC = () => {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [completed, setCompleted] = useState<boolean>(false);
+  const [tabletQrTarget, setTabletQrTarget] = useState<{
+    kioskId: string;
+    kioskName?: string;
+    ownerName?: string;
+  } | null>(null);
 
   useEffect(() => {
     async function checkToken() {
@@ -194,6 +200,21 @@ export const BuyerSetupPage: React.FC = () => {
                                 <Download className="h-3 w-3 text-neutral-600" />
                                 Download Windows Launcher (.bat)
                               </button>
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setTabletQrTarget({
+                                    kioskId: k.id,
+                                    kioskName: k.name,
+                                    ownerName: invitation.fullName,
+                                  })
+                                }
+                                className="inline-flex items-center gap-1.5 rounded-full border border-petrol-300 bg-white px-3.5 py-1.5 text-[11px] font-medium text-petrol-800 hover:bg-petrol-50"
+                              >
+                                <QrCode className="h-3 w-3 text-petrol-700" />
+                                Scan for Tablet
+                              </button>
                             </div>
                           </div>
                         );
@@ -239,6 +260,20 @@ export const BuyerSetupPage: React.FC = () => {
                               >
                                 <Download className="h-3 w-3 text-neutral-600" />
                                 Download Windows Launcher (.bat)
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setTabletQrTarget({
+                                    kioskId: kId,
+                                    ownerName: invitation.fullName,
+                                  })
+                                }
+                                className="inline-flex items-center gap-1.5 rounded-full border border-petrol-300 bg-white px-3.5 py-1.5 text-[11px] font-medium text-petrol-800 hover:bg-petrol-50"
+                              >
+                                <QrCode className="h-3 w-3 text-petrol-700" />
+                                Scan for Tablet
                               </button>
                             </div>
                           </div>
@@ -332,6 +367,14 @@ export const BuyerSetupPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <TabletQrModal
+        open={Boolean(tabletQrTarget)}
+        onClose={() => setTabletQrTarget(null)}
+        kioskId={tabletQrTarget?.kioskId || ''}
+        kioskName={tabletQrTarget?.kioskName}
+        ownerName={tabletQrTarget?.ownerName}
+      />
     </div>
   );
 };
