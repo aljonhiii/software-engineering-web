@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Tablet, Copy, Check, ExternalLink, RefreshCw, Wifi, Smartphone, Globe } from 'lucide-react';
 import QRCode from 'qrcode';
-import { fetchLauncherNetworkInfo } from '../../api/client';
+import { fetchLauncherNetworkInfo, getKioskLaunchUrl } from '../../api/client';
 
 interface TabletQrModalProps {
   open: boolean;
@@ -242,7 +242,7 @@ export const TabletQrModal: React.FC<TabletQrModalProps> = ({
             href={
               targetMode === 'expo'
                 ? activeTargetUrl
-                : `http://localhost:3000/api/launcher/kiosk?kioskId=${encodeURIComponent(cleanId)}`
+                : getKioskLaunchUrl(cleanId)
             }
             target="_blank"
             rel="noreferrer"

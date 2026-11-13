@@ -8,7 +8,47 @@ import {
   BuyerInvitationInfo,
 } from '../types';
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/+$/, '');
+/**
+ * Dynamically resolves the API base URL.
+ * Automatically adapts between:
+ * - Desktop development (Vite proxy /api forwarding to backend :3000)
+ * - Mobile / LAN devices (routes through Vite proxy or dynamic host IP so 'localhost' is never queried on the mobile device)
+ * - Custom remote / production domains
+ */
+export function getApiBaseUrl(): string {
+  const envUrl = (import.meta.env.VITE_API_URL || '').trim();
+
+  if (typeof window !== 'undefined' && window.location) {
+    const { hostname, port, protocol } = window.location;
+
+    // 1. If an explicit remote production URL (not localhost) is configured, respect it
+    if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
+      return envUrl.replace(/\/+$/, '');
+    }
+
+    // 2. When accessed under Vite dev server (port 5173), always use relative '/api'
+    // Vite's proxy receives the request at http://<ip>:5173/api and forwards it locally
+    // to http://localhost:3000/api on the host machine.
+    // This completely eliminates cross-device 'localhost' lookups on mobile phones,
+    // avoids Windows Firewall restrictions on port 3000, and prevents CORS issues.
+    if (port === '5173') {
+      return '/api';
+    }
+
+    // 3. If accessed over LAN IP on any other port:
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      return `${protocol}//${hostname}:3000/api`;
+    }
+  }
+
+  // 4. Fallback default
+  if (!envUrl || envUrl === 'http://localhost:3000/api') {
+    return '/api';
+  }
+
+  return envUrl.replace(/\/+$/, '');
+}
+
 const TOKEN_KEY = 'kixcleen_central_auth_token';
 
 export function getStoredToken(): string | null {
@@ -49,7 +89,9 @@ export async function apiRequest<T = any>(
   options: RequestInit = {}
 ): Promise<T> {
   const token = getStoredToken();
-  const url = `${API_BASE_URL}/${endpoint.replace(/^\/+/, '')}`;
+  const baseUrl = getApiBaseUrl();
+  const cleanEndpoint = endpoint.replace(/^\/+/, '');
+  const url = baseUrl ? `${baseUrl}/${cleanEndpoint}` : `/${cleanEndpoint}`;
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -291,7 +333,24 @@ export async function createAdminBuyer(payload: {
   });
 }
 
-export const KIOSK_LAUNCHER_URL = `${API_BASE_URL}/launcher/kiosk`;
+/**
+ * Returns the dynamic auto-discovery launcher URL for a given kiosk ID.
+ * This URL routes to the backend launcher which detects Shoeclean across all ports.
+ */
+export function getKioskLaunchUrl(kioskId: string, directUrl?: string): string {
+  if (directUrl && directUrl.includes('/launcher/kiosk')) return directUrl;
+  const cleanId = encodeURIComponent((kioskId || 'KIOSK-01-MAIN').trim().toUpperCase());
+
+  if (typeof window !== 'undefined' && window.location) {
+    const { hostname, protocol } = window.location;
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      return `${protocol}//${hostname}:3000/api/launcher/kiosk?kioskId=${cleanId}`;
+    }
+  }
+  return `http://localhost:3000/api/launcher/kiosk?kioskId=${cleanId}`;
+}
+
+export const KIOSK_LAUNCHER_URL = getKioskLaunchUrl('KIOSK-01-MAIN');
 export const KIOSK_APP_URL = KIOSK_LAUNCHER_URL;
 
 export async function fetchLauncherNetworkInfo(): Promise<{
@@ -302,28 +361,25 @@ export async function fetchLauncherNetworkInfo(): Promise<{
   launcherUrl: string;
 }> {
   try {
-    const res = await fetch(`${API_BASE_URL}/launcher/network-info`);
+    const baseUrl = getApiBaseUrl();
+    const res = await fetch(`${baseUrl}/launcher/network-info`);
     if (!res.ok) throw new Error('Failed to fetch network info');
     return await res.json();
   } catch {
+    const host =
+      typeof window !== 'undefined' &&
+      window.location.hostname !== 'localhost' &&
+      window.location.hostname !== '127.0.0.1'
+        ? window.location.hostname
+        : '192.168.1.4';
     return {
       success: false,
-      primaryIp: '192.168.1.4',
-      lanBackendUrl: 'http://192.168.1.4:3000',
-      lanKioskUrl: 'http://192.168.1.4:8081',
-      launcherUrl: 'http://192.168.1.4:3000/api/launcher/kiosk',
+      primaryIp: host,
+      lanBackendUrl: `http://${host}:3000`,
+      lanKioskUrl: `http://${host}:8081`,
+      launcherUrl: `http://${host}:3000/api/launcher/kiosk`,
     };
   }
-}
-
-/**
- * Returns the dynamic auto-discovery launcher URL for a given kiosk ID.
- * This URL routes to the backend launcher which detects Shoeclean across all ports.
- */
-export function getKioskLaunchUrl(kioskId: string, directUrl?: string): string {
-  if (directUrl && directUrl.includes('/launcher/kiosk')) return directUrl;
-  const cleanId = encodeURIComponent((kioskId || 'KIOSK-01-MAIN').trim().toUpperCase());
-  return `${API_BASE_URL}/launcher/kiosk?kioskId=${cleanId}`;
 }
 
 /**

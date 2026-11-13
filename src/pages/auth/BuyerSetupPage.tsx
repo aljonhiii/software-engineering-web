@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Eye, EyeOff, Monitor, Download, Play, QrCode, CheckCircle2, Check, ShieldCheck } from 'lucide-react';
 import {
@@ -33,41 +33,46 @@ export const BuyerSetupPage: React.FC = () => {
     ownerName?: string;
   } | null>(null);
 
-  useEffect(() => {
-    async function checkToken() {
-      if (!token) {
-        setVerifyError('Open the invitation link sent to your email.');
-        setVerifying(false);
-        return;
-      }
-
-      try {
-        const res = await verifyInvitationToken(token);
-        if (res.success && res.invitation) {
-          setInvitation(res.invitation);
-          setUsername(res.invitation.username || '');
-          setFullName(res.invitation.fullName || '');
-        }
-      } catch (err: any) {
-        const msg = String(err.message || '');
-        if (
-          msg.toLowerCase().includes('already') ||
-          msg.toLowerCase().includes('completed') ||
-          err.code === 'INVALID_OR_USED' ||
-          err.code === 'ALREADY_COMPLETED'
-        ) {
-          setIsAlreadyDone(true);
-        } else {
-          setVerifyError(
-            err.message || 'This invitation link is invalid or expired.'
-          );
-        }
-      } finally {
-        setVerifying(false);
-      }
+  const checkToken = useCallback(async () => {
+    if (!token) {
+      setVerifyError('Open the invitation link sent to your email.');
+      setVerifying(false);
+      return;
     }
-    checkToken();
+
+    setVerifying(true);
+    setVerifyError(null);
+    try {
+      const res = await verifyInvitationToken(token);
+      if (res.success && res.invitation) {
+        setInvitation(res.invitation);
+        setUsername(res.invitation.username || '');
+        setFullName(res.invitation.fullName || '');
+      }
+    } catch (err: any) {
+      const msg = String(err.message || '');
+      if (
+        msg.toLowerCase().includes('already') ||
+        msg.toLowerCase().includes('completed') ||
+        err.code === 'INVALID_OR_USED' ||
+        err.code === 'ALREADY_COMPLETED'
+      ) {
+        setIsAlreadyDone(true);
+      } else if (msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network')) {
+        setVerifyError('Could not connect to the backend server. Please verify you are on the same Wi-Fi network and tap Retry.');
+      } else {
+        setVerifyError(
+          err.message || 'This invitation link is invalid or expired.'
+        );
+      }
+    } finally {
+      setVerifying(false);
+    }
   }, [token]);
+
+  useEffect(() => {
+    checkToken();
+  }, [checkToken]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -165,9 +170,16 @@ export const BuyerSetupPage: React.FC = () => {
               </div>
             ) : verifyError ? (
               <div className="space-y-4">
-                <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-xs text-neutral-600">
+                <div className="rounded-xl border border-rose-200 bg-rose-50/70 p-4 text-xs text-rose-800 leading-relaxed">
                   {verifyError}
                 </div>
+                <button
+                  type="button"
+                  onClick={checkToken}
+                  className="w-full rounded-full border border-neutral-200 bg-white py-2 text-xs font-medium text-neutral-800 hover:bg-neutral-50 shadow-2xs"
+                >
+                  Retry Connection
+                </button>
                 <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3 text-center text-xs text-neutral-500">
                   Please ask your Super Administrator to generate a new invitation if needed.
                 </div>
