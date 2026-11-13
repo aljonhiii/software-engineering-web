@@ -4,7 +4,7 @@ import {
   LayoutDashboard,
   Cpu,
   Users,
-  Link2,
+  MessageSquare,
   LogOut,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -45,16 +45,16 @@ export const AdminLayout: React.FC = () => {
       icon: Users,
     },
     {
-      to: '/admin/assignments',
+      to: '/admin/inquiries',
       end: false,
-      label: 'Assignments',
-      icon: Link2,
+      label: 'Orders & Inquiries',
+      icon: MessageSquare,
     },
   ];
 
   const handleLogout = () => {
     logout();
-    navigate('/admin/login');
+    navigate('/admin/login', { replace: true });
   };
 
   return (

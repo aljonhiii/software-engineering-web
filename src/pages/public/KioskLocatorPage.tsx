@@ -9,8 +9,10 @@ import {
   Menu,
   ArrowUpRight,
   ChevronDown,
+  CheckCircle2,
+  Send,
 } from 'lucide-react';
-import { fetchPublicKiosks } from '../../api/client';
+import { fetchPublicKiosks, submitCustomerInquiry } from '../../api/client';
 import { PublicKiosk } from '../../types';
 import { KioskMap, MapKioskItem } from '../../components/map/KioskMap';
 import { StatusBadge } from '../../components/common/StatusBadge';
@@ -158,6 +160,56 @@ export const KioskLocatorPage: React.FC = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
+  // Customer Order & Inquiry Form State
+  const [inqName, setInqName] = useState<string>('');
+  const [inqPhone, setInqPhone] = useState<string>('');
+  const [inqEmail, setInqEmail] = useState<string>('');
+  const [inqLocation, setInqLocation] = useState<string>('KCC Mall de Zamboanga (Camino Nuevo)');
+  const [inqType, setInqType] = useState<string>('Order Shoe Cleaning Service');
+  const [inqPairs, setInqPairs] = useState<string>('1-2 Pairs');
+  const [inqMessage, setInqMessage] = useState<string>('');
+  const [inqSubmitting, setInqSubmitting] = useState<boolean>(false);
+  const [inqSuccess, setInqSuccess] = useState<string | null>(null);
+  const [inqError, setInqError] = useState<string | null>(null);
+
+  const handleInquirySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setInqError(null);
+    setInqSuccess(null);
+
+    if (!inqName.trim() || !inqPhone.trim() || !inqEmail.trim()) {
+      setInqError('Please fill in your name, contact phone number, and email.');
+      return;
+    }
+
+    setInqSubmitting(true);
+    try {
+      const res = await submitCustomerInquiry({
+        fullName: inqName.trim(),
+        phone: inqPhone.trim(),
+        email: inqEmail.trim(),
+        preferredLocation: inqLocation,
+        inquiryType: inqType,
+        estimatedPairs: inqPairs,
+        message: inqMessage.trim() || undefined,
+      });
+
+      if (res.success) {
+        setInqSuccess(
+          `Thank you, ${inqName.trim()}! Your order request (${res.inquiry.id}) was received. Our Zamboanga City team will reach out to you shortly.`
+        );
+        setInqName('');
+        setInqPhone('');
+        setInqEmail('');
+        setInqMessage('');
+      }
+    } catch (err: any) {
+      setInqError(err.message || 'Could not submit your request. Please try again.');
+    } finally {
+      setInqSubmitting(false);
+    }
+  };
+
   const loadKiosks = async () => {
     try {
       setLoading(true);
@@ -225,7 +277,7 @@ export const KioskLocatorPage: React.FC = () => {
     [kiosks]
   );
 
-  const currentHero = HERO_SLIDES[activeSlide];
+  const currentHero = HERO_SLIDES[activeSlide] ?? HERO_SLIDES[0];
 
   const handleSelectLocationCard = (kiosk: PublicKiosk) => {
     setSelectedKioskId(kiosk.id);
@@ -423,21 +475,24 @@ export const KioskLocatorPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Center Column: Spherical Showcase & Stone Pedestal */}
+          {/* Center Column: Natural Footwear Showcase */}
           <div className="order-1 flex flex-col items-center lg:order-2 lg:col-span-5">
-            <div className="relative flex flex-col items-center">
-              <div className="relative flex h-[290px] w-[290px] sm:h-[350px] sm:w-[350px] items-center justify-center overflow-hidden rounded-full border border-neutral-200 bg-neutral-100 shadow-[0_28px_60px_-15px_rgba(0,0,0,0.18)]">
-                <img
-                  src={currentHero.image}
-                  alt={currentHero.label}
-                  className="h-full w-full object-cover transition duration-500"
-                />
-                <div className="absolute inset-0 rounded-full ring-12 ring-white/80 ring-inset" />
-              </div>
+            <div className="relative flex w-full flex-col items-center">
+              <div className="relative flex h-[300px] w-full max-w-[380px] sm:h-[350px] flex-col items-center justify-center rounded-3xl border border-neutral-200/90 bg-gradient-to-b from-neutral-50 to-neutral-100/70 p-6 shadow-sm">
+                <div className="relative flex flex-1 w-full items-center justify-center">
+                  <img
+                    src={currentHero.cutout}
+                    alt={currentHero.label}
+                    className="max-h-[220px] sm:max-h-[250px] w-auto object-contain transition-transform duration-500 hover:scale-105 drop-shadow-[0_16px_20px_rgba(0,0,0,0.18)]"
+                  />
+                  {/* Natural Ground Contact Shadow */}
+                  <div className="absolute -bottom-1 h-3 w-4/5 rounded-full bg-neutral-900/10 blur-md pointer-events-none" />
+                </div>
 
-              <div className="-mt-4 z-10 flex h-12 w-60 sm:w-68 items-center justify-between rounded-t-xl rounded-b-md border border-neutral-200 bg-neutral-100 px-4 text-[11px] font-medium text-neutral-600 shadow-xs">
-                <span>{currentHero.label}</span>
-                <span className="font-mono text-neutral-900">3 to 5 mins</span>
+                <div className="mt-3 flex w-full items-center justify-between rounded-xl border border-neutral-200 bg-white/90 px-3.5 py-2 text-[11px] font-medium text-neutral-600 shadow-2xs backdrop-blur-xs">
+                  <span className="font-semibold text-neutral-900">{currentHero.label}</span>
+                  <span className="font-mono text-neutral-600">3 to 5 mins</span>
+                </div>
               </div>
 
               <div className="mt-4 flex items-center gap-1.5">
@@ -982,40 +1037,196 @@ export const KioskLocatorPage: React.FC = () => {
         </div>
       </section>
 
-      {/* 10. CONTACT US */}
+      {/* 10. ORDER & CONTACT FORM */}
       <section
         id="contact"
         className="scroll-mt-16 border-t border-neutral-100 bg-white py-16 sm:py-20"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 gap-8 rounded-2xl border border-neutral-200 bg-neutral-50/60 p-6 sm:p-10 lg:grid-cols-12 lg:items-center">
-            <div className="lg:col-span-7 space-y-2">
+          <div className="grid grid-cols-1 gap-12 rounded-3xl border border-neutral-200 bg-neutral-50/70 p-6 sm:p-12 lg:grid-cols-12">
+            {/* Left: Explanatory Copy */}
+            <div className="lg:col-span-5 space-y-4">
+              <span className="inline-flex items-center rounded-full border border-neutral-300 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-800">
+                Direct Orders &amp; Inquiries
+              </span>
               <h2 className="font-display text-2xl font-bold tracking-tight text-neutral-950 sm:text-3xl">
-                Contact Us
+                Order Service or Request a Kiosk in Zamboanga City
               </h2>
-              <p className="max-w-md text-sm text-neutral-600">
-                Questions about a kiosk location or buyer account? Reach us directly by email.
+              <p className="text-xs sm:text-sm leading-relaxed text-neutral-600">
+                Want to book a shoe cleaning service, place a dedicated KixCleen machine at your building or store, or inquire about vending units in Zamboanga City?
               </p>
+              <p className="text-xs text-neutral-500">
+                Submit your details below. Our Zamboanga operations manager will follow up with you directly.
+              </p>
+
+              <div className="pt-4 border-t border-neutral-200/80 space-y-2 text-xs text-neutral-600">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-neutral-400 shrink-0" />
+                  <span>Main Coverage: Zamboanga City &amp; Western Mindanao Hubs</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-neutral-400 shrink-0" />
+                  <span>Typical response time: Under 2 hours during business hours</span>
+                </div>
+              </div>
             </div>
 
-            <div className="lg:col-span-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="rounded-xl border border-neutral-200 bg-white p-4">
-                <p className="text-xs text-neutral-400">General &amp; Admin</p>
-                <a
-                  href="mailto:admin@kixcleen.com"
-                  className="mt-1 block font-mono text-xs font-semibold text-neutral-950 hover:underline"
-                >
-                  admin@kixcleen.com
-                </a>
-              </div>
-              <div className="rounded-xl border border-neutral-200 bg-white p-4">
-                <p className="text-xs text-neutral-400">Kiosk Owners</p>
-                <a
-                  href="mailto:owner@kixcleen.com"
-                  className="mt-1 block font-mono text-xs font-semibold text-neutral-950 hover:underline"
-                >
-                  owner@kixcleen.com
-                </a>
+            {/* Right: Interactive Order Form */}
+            <div className="lg:col-span-7">
+              <div className="rounded-2xl border border-neutral-200 bg-white p-6 sm:p-8 shadow-xs">
+                {inqSuccess ? (
+                  <div className="space-y-4 py-6 text-center">
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                      <CheckCircle2 className="h-6 w-6" />
+                    </div>
+                    <h3 className="font-display text-lg font-bold text-neutral-950">
+                      Request Received!
+                    </h3>
+                    <p className="mx-auto max-w-md text-xs leading-relaxed text-neutral-600">
+                      {inqSuccess}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setInqSuccess(null)}
+                      className="mt-4 rounded-full border border-neutral-200 bg-white px-5 py-2 text-xs font-medium text-neutral-700 hover:border-neutral-950 hover:text-neutral-950"
+                    >
+                      Submit Another Request
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleInquirySubmit} className="space-y-4">
+                    {inqError && (
+                      <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">
+                        {inqError}
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div>
+                        <label className="block text-xs font-medium text-neutral-700">
+                          Your Name <span className="text-rose-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={inqName}
+                          onChange={(e) => setInqName(e.target.value)}
+                          placeholder="e.g. Maria Santos"
+                          className="mt-1 w-full rounded-xl border border-neutral-200 bg-neutral-50/50 px-3.5 py-2 text-xs text-neutral-900 focus:border-neutral-950 focus:bg-white focus:outline-hidden"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-neutral-700">
+                          Mobile / Phone <span className="text-rose-500">*</span>
+                        </label>
+                        <input
+                          type="tel"
+                          required
+                          value={inqPhone}
+                          onChange={(e) => setInqPhone(e.target.value)}
+                          placeholder="0917-000-0000"
+                          className="mt-1 w-full rounded-xl border border-neutral-200 bg-neutral-50/50 px-3.5 py-2 text-xs text-neutral-900 focus:border-neutral-950 focus:bg-white focus:outline-hidden"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div>
+                        <label className="block text-xs font-medium text-neutral-700">
+                          Email Address <span className="text-rose-500">*</span>
+                        </label>
+                        <input
+                          type="email"
+                          required
+                          value={inqEmail}
+                          onChange={(e) => setInqEmail(e.target.value)}
+                          placeholder="maria@example.com"
+                          className="mt-1 w-full rounded-xl border border-neutral-200 bg-neutral-50/50 px-3.5 py-2 text-xs text-neutral-900 focus:border-neutral-950 focus:bg-white focus:outline-hidden"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-neutral-700">
+                          Preferred Zamboanga Location
+                        </label>
+                        <select
+                          value={inqLocation}
+                          onChange={(e) => setInqLocation(e.target.value)}
+                          className="mt-1 w-full rounded-xl border border-neutral-200 bg-neutral-50/50 px-3 py-2 text-xs text-neutral-900 focus:border-neutral-950 focus:bg-white focus:outline-hidden"
+                        >
+                          <option value="KCC Mall de Zamboanga (Camino Nuevo)">KCC Mall de Zamboanga (Camino Nuevo)</option>
+                          <option value="SM City Mindpro (La Purisima)">SM City Mindpro (La Purisima)</option>
+                          <option value="Paseo del Mar Promenade (Zone IV)">Paseo del Mar Promenade (Zone IV)</option>
+                          <option value="Yubenco Star Mall (Putik)">Yubenco Star Mall (Putik)</option>
+                          <option value="WMSU Campus / Baliwasan">WMSU Campus / Baliwasan</option>
+                          <option value="Zamboanga Int'l Airport (Canelar)">Zamboanga Int'l Airport (Canelar)</option>
+                          <option value="CityMall Tetuan (Don Alfaro)">CityMall Tetuan (Don Alfaro)</option>
+                          <option value="Santa Maria Commercial Center">Santa Maria Commercial Center</option>
+                          <option value="Other Location in Zamboanga City">Other Location in Zamboanga City</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div>
+                        <label className="block text-xs font-medium text-neutral-700">
+                          Inquiry / Order Type
+                        </label>
+                        <select
+                          value={inqType}
+                          onChange={(e) => setInqType(e.target.value)}
+                          className="mt-1 w-full rounded-xl border border-neutral-200 bg-neutral-50/50 px-3 py-2 text-xs text-neutral-900 focus:border-neutral-950 focus:bg-white focus:outline-hidden"
+                        >
+                          <option value="Order Shoe Cleaning Service">Order Shoe Cleaning Service</option>
+                          <option value="Request Kiosk Placement at My Property">Request Kiosk Placement at My Property</option>
+                          <option value="Kiosk Machine Purchase / Franchise">Kiosk Machine Purchase / Franchise</option>
+                          <option value="Commercial Fleet / Event Service">Commercial Fleet / Event Service</option>
+                          <option value="General Inquiry">General Inquiry</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-neutral-700">
+                          Estimated Shoe Quantity
+                        </label>
+                        <select
+                          value={inqPairs}
+                          onChange={(e) => setInqPairs(e.target.value)}
+                          className="mt-1 w-full rounded-xl border border-neutral-200 bg-neutral-50/50 px-3 py-2 text-xs text-neutral-900 focus:border-neutral-950 focus:bg-white focus:outline-hidden"
+                        >
+                          <option value="1-2 Pairs">1-2 Pairs</option>
+                          <option value="3-5 Pairs">3-5 Pairs</option>
+                          <option value="6-10 Pairs">6-10 Pairs</option>
+                          <option value="Batch / Wholesale (10+ Pairs)">Batch / Wholesale (10+ Pairs)</option>
+                          <option value="Not Applicable">Not Applicable</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-neutral-700">
+                        Notes or Specific Requests (Optional)
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={inqMessage}
+                        onChange={(e) => setInqMessage(e.target.value)}
+                        placeholder="Tell us about your shoes (e.g., leather dress shoes, white sneakers) or proposed machine placement..."
+                        className="mt-1 w-full rounded-xl border border-neutral-200 bg-neutral-50/50 px-3.5 py-2 text-xs text-neutral-900 focus:border-neutral-950 focus:bg-white focus:outline-hidden"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={inqSubmitting}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-neutral-950 py-3 text-xs font-semibold text-white hover:bg-neutral-800 disabled:opacity-50 transition shadow-xs"
+                    >
+                      <Send className="h-3.5 w-3.5" />
+                      {inqSubmitting ? 'Submitting Request...' : 'Submit Order Request'}
+                    </button>
+                  </form>
+                )}
               </div>
             </div>
           </div>

@@ -8,6 +8,7 @@ export const AdminLoginPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isSessionExpired = searchParams.get('expired') === '1';
+  const isTampered = searchParams.get('tampered') === '1';
 
   const [identifier, setIdentifier] = useState<string>('superadmin@kixcleen.com');
   const [password, setPassword] = useState<string>('admin1234');
@@ -72,6 +73,12 @@ export const AdminLoginPage: React.FC = () => {
           <p className="mt-1 text-xs text-neutral-500">
             Manage kiosks, buyer accounts, and assignments.
           </p>
+
+          {isTampered && (
+            <div className="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-3.5 text-xs text-amber-900 leading-relaxed shadow-2xs">
+              <strong>Session Required:</strong> An active Super Administrator session is required to access that URL. Please sign in below to continue.
+            </div>
+          )}
 
           {isSessionExpired && (
             <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-900 leading-relaxed">

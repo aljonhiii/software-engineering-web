@@ -133,6 +133,53 @@ export interface AdminOverviewData {
   deactivatedBuyers: number;
   kiosks: AdminKiosk[];
   recentBuyers: AdminBuyer[];
+  // Live Zamboanga Fleet Telemetry Statistics
+  fleetCity?: string;
+  totalRevenue?: number;
+  totalOrders?: number;
+  uptimePct?: number;
+  serviceDistribution?: {
+    sanitation: number;
+    deodorize: number;
+    disinfection: number;
+  };
+  categoryDistribution?: {
+    leather: number;
+    sneakers: number;
+  };
+  fleetConsumables?: {
+    waterPercent: number;
+    soapPercent: number;
+  };
+  recentActivity?: KioskRecentActivity[];
+  pendingInquiriesCount?: number;
+}
+
+export interface KioskRecentActivity {
+  id: string;
+  orderId?: string;
+  kioskId: string;
+  serviceName: string;
+  shoeType: string;
+  amount: number;
+  paymentMethod: string;
+  status: string;
+  timestamp: string;
+}
+
+export interface CustomerInquiry {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  preferredLocation: string;
+  inquiryType: string;
+  estimatedPairs?: string;
+  message?: string;
+  status: 'pending' | 'contacted' | 'completed' | 'cancelled';
+  adminNotes?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface BuyerInvitationInfo {

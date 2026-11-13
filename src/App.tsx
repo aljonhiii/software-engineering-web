@@ -5,10 +5,11 @@ import { KioskLocatorPage } from './pages/public/KioskLocatorPage';
 import { BuyerSetupPage } from './pages/auth/BuyerSetupPage';
 import { AdminLoginPage } from './pages/admin/AdminLoginPage';
 import { AdminLayout } from './components/layout/AdminLayout';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { AdminOverviewPage } from './pages/admin/AdminOverviewPage';
 import { KioskManagementPage } from './pages/admin/KioskManagementPage';
 import { BuyerManagementPage } from './pages/admin/BuyerManagementPage';
-import { KioskAssignmentsPage } from './pages/admin/KioskAssignmentsPage';
+import { AdminInquiriesPage } from './pages/admin/AdminInquiriesPage';
 
 export function App() {
   return (
@@ -25,11 +26,18 @@ export function App() {
           <Route path="/admin/login" element={<AdminLoginPage />} />
 
           {/* Protected Super Admin Dashboard Routes */}
-          <Route path="/admin" element={<AdminLayout />}>
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route index element={<AdminOverviewPage />} />
             <Route path="kiosks" element={<KioskManagementPage />} />
             <Route path="buyers" element={<BuyerManagementPage />} />
-            <Route path="assignments" element={<KioskAssignmentsPage />} />
+            <Route path="inquiries" element={<AdminInquiriesPage />} />
           </Route>
 
           {/* Fallback */}

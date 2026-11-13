@@ -6,6 +6,7 @@ import {
   AdminBuyer,
   KioskAssignmentRecord,
   BuyerInvitationInfo,
+  CustomerInquiry,
 } from '../types';
 
 /**
@@ -53,7 +54,7 @@ const TOKEN_KEY = 'kixcleen_central_auth_token';
 
 export function getStoredToken(): string | null {
   try {
-    return localStorage.getItem(TOKEN_KEY);
+    return sessionStorage.getItem(TOKEN_KEY) || localStorage.getItem(TOKEN_KEY);
   } catch {
     return null;
   }
@@ -62,8 +63,10 @@ export function getStoredToken(): string | null {
 export function setStoredToken(token: string | null): void {
   try {
     if (token) {
-      localStorage.setItem(TOKEN_KEY, token);
+      sessionStorage.setItem(TOKEN_KEY, token);
+      localStorage.removeItem(TOKEN_KEY);
     } else {
+      sessionStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(TOKEN_KEY);
     }
   } catch {
@@ -496,6 +499,60 @@ export async function unassignKiosk(kioskId: string): Promise<{
   message: string;
 }> {
   return apiRequest(`/admin/assignments/${encodeURIComponent(kioskId)}`, {
+    method: 'DELETE',
+  });
+}
+
+// ============================================================================
+// Public Customer Inquiries & Order Requests
+// ============================================================================
+export async function submitCustomerInquiry(payload: {
+  fullName: string;
+  email: string;
+  phone: string;
+  preferredLocation: string;
+  inquiryType: string;
+  estimatedPairs?: string;
+  message?: string;
+}): Promise<{
+  success: boolean;
+  message: string;
+  inquiry: CustomerInquiry;
+}> {
+  return apiRequest('/public/inquiries', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchAdminInquiries(): Promise<{
+  success: boolean;
+  count: number;
+  inquiries: CustomerInquiry[];
+}> {
+  return apiRequest('/admin/inquiries');
+}
+
+export async function updateAdminInquiryStatus(
+  id: string,
+  status: 'pending' | 'contacted' | 'completed' | 'cancelled',
+  adminNotes?: string
+): Promise<{
+  success: boolean;
+  message: string;
+  inquiry: CustomerInquiry;
+}> {
+  return apiRequest(`/admin/inquiries/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status, adminNotes }),
+  });
+}
+
+export async function deleteAdminInquiry(id: string): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  return apiRequest(`/admin/inquiries/${encodeURIComponent(id)}`, {
     method: 'DELETE',
   });
 }

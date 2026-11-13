@@ -188,7 +188,7 @@ export const KioskMap: React.FC<KioskMapProps> = ({
       ? [pickedCoords.lat, pickedCoords.lng]
       : mappableKiosks.length > 0
       ? [Number(mappableKiosks[0].latitude), Number(mappableKiosks[0].longitude)]
-      : [14.5995, 121.0244];
+      : [6.9214, 122.0790];
 
   return (
     <div className={`relative w-full overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-100 ${heightClass}`}>

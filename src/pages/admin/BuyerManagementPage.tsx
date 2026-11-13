@@ -35,7 +35,7 @@ export const BuyerManagementPage: React.FC = () => {
   const [createDedicatedKiosk, setCreateDedicatedKiosk] = useState<boolean>(true);
   const [dedicatedKioskId, setDedicatedKioskId] = useState<string>('');
   const [dedicatedKioskName, setDedicatedKioskName] = useState<string>('');
-  const [dedicatedKioskCity, setDedicatedKioskCity] = useState<string>('Metro Manila');
+  const [dedicatedKioskCity, setDedicatedKioskCity] = useState<string>('Zamboanga City');
   const [dedicatedKioskAddress, setDedicatedKioskAddress] = useState<string>('');
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState<boolean>(false);
@@ -83,7 +83,7 @@ export const BuyerManagementPage: React.FC = () => {
     setCreateDedicatedKiosk(true);
     setDedicatedKioskId('');
     setDedicatedKioskName('');
-    setDedicatedKioskCity('Metro Manila');
+    setDedicatedKioskCity('Zamboanga City');
     setDedicatedKioskAddress('');
     setFormError(null);
     setIsModalOpen(true);
@@ -191,8 +191,6 @@ export const BuyerManagementPage: React.FC = () => {
       setToggling(false);
     }
   };
-
-  const unassignedKiosks = kiosks.filter((k) => !k.owner);
 
   const filteredBuyers = buyers.filter((b) => {
     const isDone = Boolean(b.isSetupComplete || b.setupStatus === 'done' || b.accountStatus === 'active');
@@ -600,7 +598,7 @@ export const BuyerManagementPage: React.FC = () => {
                             type="text"
                             value={dedicatedKioskCity}
                             onChange={(e) => setDedicatedKioskCity(e.target.value)}
-                            placeholder="Metro Manila"
+                            placeholder="Zamboanga City"
                             className="mt-1 w-full rounded-xl border border-neutral-200 bg-white px-3 py-1.5 text-xs"
                           />
                         </div>
@@ -617,52 +615,6 @@ export const BuyerManagementPage: React.FC = () => {
                           />
                         </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {!editingBuyer && (
-                <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3.5">
-                  <p className="text-xs font-medium text-neutral-700">
-                    Assign additional existing kiosks (optional)
-                  </p>
-                  {unassignedKiosks.length === 0 ? (
-                    <p className="mt-1 text-xs text-neutral-400">
-                      All existing kiosks are currently assigned.
-                    </p>
-                  ) : (
-                    <div className="mt-2 max-h-36 space-y-1.5 overflow-y-auto">
-                      {unassignedKiosks.map((k) => {
-                        const checked = selectedKioskIds.includes(k.id);
-                        return (
-                          <label
-                            key={k.id}
-                            className="flex cursor-pointer items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setSelectedKioskIds([...selectedKioskIds, k.id]);
-                                } else {
-                                  setSelectedKioskIds(
-                                    selectedKioskIds.filter((id) => id !== k.id)
-                                  );
-                                }
-                              }}
-                              className="h-4 w-4 rounded border-neutral-300"
-                            />
-                            <span className="font-mono text-neutral-500">
-                              {k.id}
-                            </span>
-                            <span className="font-medium text-neutral-900">
-                              {k.name}
-                            </span>
-                          </label>
-                        );
-                      })}
                     </div>
                   )}
                 </div>
