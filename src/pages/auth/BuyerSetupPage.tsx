@@ -19,6 +19,8 @@ export const BuyerSetupPage: React.FC = () => {
   const [verifyError, setVerifyError] = useState<string | null>(null);
   const [isAlreadyDone, setIsAlreadyDone] = useState<boolean>(false);
 
+  const [username, setUsername] = useState<string>('');
+  const [fullName, setFullName] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -43,6 +45,8 @@ export const BuyerSetupPage: React.FC = () => {
         const res = await verifyInvitationToken(token);
         if (res.success && res.invitation) {
           setInvitation(res.invitation);
+          setUsername(res.invitation.username || '');
+          setFullName(res.invitation.fullName || '');
         }
       } catch (err: any) {
         const msg = String(err.message || '');
@@ -69,6 +73,10 @@ export const BuyerSetupPage: React.FC = () => {
     e.preventDefault();
     setSubmitError(null);
 
+    if (username.trim().length < 3) {
+      setSubmitError('Username must be at least 3 characters.');
+      return;
+    }
     if (password.length < 6) {
       setSubmitError('Password must be at least 6 characters.');
       return;
@@ -80,9 +88,23 @@ export const BuyerSetupPage: React.FC = () => {
 
     setSubmitting(true);
     try {
-      const res = await completeBuyerAccountSetup(token, password);
+      const res = await completeBuyerAccountSetup(token, password, {
+        username: username.trim() || undefined,
+        fullName: fullName.trim() || undefined,
+      });
       if (res.success) {
         setCompleted(true);
+        if (res.user) {
+          setInvitation((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  username: res.user.username,
+                  fullName: res.user.fullName,
+                }
+              : prev
+          );
+        }
       }
     } catch (err: any) {
       setSubmitError(err.message || 'Could not complete setup.');
@@ -345,6 +367,55 @@ export const BuyerSetupPage: React.FC = () => {
                       {submitError}
                     </div>
                   )}
+
+                  <div className="space-y-3 rounded-xl border border-neutral-200 bg-neutral-50/50 p-3.5">
+                    <p className="text-[11px] font-semibold text-neutral-600 uppercase tracking-wider">
+                      Account Credentials
+                    </p>
+
+                    <div>
+                      <label className="block text-xs font-medium text-neutral-700">
+                        Full Name
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        placeholder="Your full name"
+                        className="mt-1 w-full rounded-xl border border-neutral-200 bg-white px-3.5 py-2 text-xs focus:border-neutral-950 focus:outline-hidden"
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-medium text-neutral-700">
+                          Username
+                        </label>
+                        <span className="text-[10px] text-neutral-500">
+                          Login ID for Mobile App
+                        </span>
+                      </div>
+                      <div className="relative mt-1">
+                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-xs text-neutral-400">
+                          @
+                        </span>
+                        <input
+                          type="text"
+                          required
+                          minLength={3}
+                          value={username}
+                          onChange={(e) =>
+                            setUsername(
+                              e.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, '')
+                            )
+                          }
+                          placeholder="username"
+                          className="w-full rounded-xl border border-neutral-200 bg-white pl-8 pr-3.5 py-2 font-mono text-xs focus:border-neutral-950 focus:outline-hidden"
+                        />
+                      </div>
+                    </div>
+                  </div>
 
                   <div>
                     <label className="block text-xs font-medium text-neutral-700">

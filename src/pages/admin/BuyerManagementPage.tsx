@@ -152,18 +152,13 @@ export const BuyerManagementPage: React.FC = () => {
           dedicatedKioskCity: dedicatedKioskCity.trim() || undefined,
           dedicatedKioskAddress: dedicatedKioskAddress.trim() || undefined,
         });
-        setFeedback({ type: 'success', message: res.message });
         setIsModalOpen(false);
         await loadData();
-
-        const fullSetupUrl = `${window.location.origin}${res.invitation.setupPath}`;
-        setCopied(false);
-        setInviteModalData({
-          buyerName: res.buyer.fullName,
-          buyerEmail: res.buyer.email,
-          setupUrl: fullSetupUrl,
-          expiresAt: res.invitation.expiresAt,
-          dedicatedKiosk: res.dedicatedKiosk,
+        setFeedback({
+          type: 'success',
+          message:
+            res.message ||
+            `Owner account created for ${fullName.trim()}. An activation email with setup instructions was sent to ${email.trim()}.`,
         });
       }
     } catch (err: any) {

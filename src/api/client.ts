@@ -138,7 +138,12 @@ export async function verifyInvitationToken(token: string): Promise<{
 
 export async function completeBuyerAccountSetup(
   token: string,
-  password: string
+  password: string,
+  extra?: {
+    username?: string;
+    fullName?: string;
+    phone?: string;
+  }
 ): Promise<{
   success: boolean;
   message: string;
@@ -147,7 +152,7 @@ export async function completeBuyerAccountSetup(
 }> {
   return apiRequest('/auth/complete-setup', {
     method: 'POST',
-    body: JSON.stringify({ token, password }),
+    body: JSON.stringify({ token, password, ...(extra || {}) }),
   });
 }
 
