@@ -19,20 +19,20 @@ import { StatusBadge } from '../../components/common/StatusBadge';
 
 const HERO_SLIDES = [
   {
-    id: 'sneakers',
-    label: 'Everyday Sneakers',
-    category: 'Other Shoes',
-    image:
-      'https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=1200&q=85',
-    cutout: '/shoes/sneakers.png',
-  },
-  {
     id: 'leather',
     label: 'Leather Shoes',
     category: 'Leather Shoes',
     image:
       'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&w=1200&q=85',
     cutout: '/shoes/leather.png',
+  },
+  {
+    id: 'sneakers',
+    label: 'Everyday Sneakers',
+    category: 'Other Shoes',
+    image:
+      'https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=1200&q=85',
+    cutout: '/shoes/sneakers.png',
   },
   {
     id: 'running',
