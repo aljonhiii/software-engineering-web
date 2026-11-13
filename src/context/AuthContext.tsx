@@ -55,6 +55,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initAuth();
   }, [initAuth]);
 
+  // Listen for unauthorized 401 events dispatched by API client
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      logout();
+    };
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
+  }, []);
+
+  // 30-minute idle session timeout for administrative security
+  useEffect(() => {
+    if (!token || !user) return;
+
+    let lastActivity = Date.now();
+    const updateActivity = () => {
+      lastActivity = Date.now();
+    };
+
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+    events.forEach((ev) => window.addEventListener(ev, updateActivity, { passive: true }));
+
+    const checkInterval = setInterval(() => {
+      // 30 minutes = 30 * 60 * 1000 ms
+      const idleTime = Date.now() - lastActivity;
+      if (idleTime > 30 * 60 * 1000) {
+        logout();
+        window.location.href = '/admin/login?expired=1';
+      }
+    }, 30 * 1000);
+
+    return () => {
+      events.forEach((ev) => window.removeEventListener(ev, updateActivity));
+      clearInterval(checkInterval);
+    };
+  }, [token, user]);
+
   const login = async (identifier: string, password: string): Promise<AuthUser> => {
     const res = await loginUser(identifier, password);
     if (res.success && res.token && res.user) {

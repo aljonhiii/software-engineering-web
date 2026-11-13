@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate, Navigate, Link } from 'react-router-dom';
-import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { useNavigate, Navigate, useSearchParams } from 'react-router-dom';
+import { Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export const AdminLoginPage: React.FC = () => {
   const { login, isAuthenticated, isSuperAdmin } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isSessionExpired = searchParams.get('expired') === '1';
 
   const [identifier, setIdentifier] = useState<string>('superadmin@kixcleen.com');
   const [password, setPassword] = useState<string>('admin1234');
@@ -46,7 +48,7 @@ export const AdminLoginPage: React.FC = () => {
       {/* Left Form Column */}
       <div className="flex flex-col justify-between p-6 sm:p-12 lg:col-span-6">
         <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5">
             <img
               src="/kixcleen-logo.png"
               alt="KixCleen"
@@ -55,15 +57,12 @@ export const AdminLoginPage: React.FC = () => {
             <span className="font-display text-base font-bold tracking-[0.12em] uppercase">
               KixCleen
             </span>
-          </Link>
+          </div>
 
-          <Link
-            to="/"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 hover:text-neutral-950"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Back to site
-          </Link>
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-[11px] font-semibold text-neutral-600">
+            <ShieldCheck className="h-3.5 w-3.5 text-neutral-500" />
+            <span>Admin Portal</span>
+          </div>
         </div>
 
         <div className="mx-auto w-full max-w-sm py-12">
@@ -73,6 +72,12 @@ export const AdminLoginPage: React.FC = () => {
           <p className="mt-1 text-xs text-neutral-500">
             Manage kiosks, buyer accounts, and assignments.
           </p>
+
+          {isSessionExpired && (
+            <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-900 leading-relaxed">
+              <strong>Session Expired:</strong> Your administrative session has timed out due to inactivity. Please sign in again.
+            </div>
+          )}
 
           {error && (
             <div className="mt-5 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">

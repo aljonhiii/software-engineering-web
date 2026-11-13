@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
-import { ArrowLeft, Eye, EyeOff, Monitor, Download, Play, QrCode, CheckCircle2, Check } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { Eye, EyeOff, Monitor, Download, Play, QrCode, CheckCircle2, Check, ShieldCheck } from 'lucide-react';
 import {
   verifyInvitationToken,
   completeBuyerAccountSetup,
@@ -117,7 +117,7 @@ export const BuyerSetupPage: React.FC = () => {
     <div className="flex min-h-screen flex-col bg-neutral-50 text-neutral-950">
       <header className="border-b border-neutral-200 bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          <Link to="/" className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5">
             <img
               src="/kixcleen-logo.png"
               alt="KixCleen"
@@ -126,14 +126,11 @@ export const BuyerSetupPage: React.FC = () => {
             <span className="font-display text-base font-bold tracking-[0.12em] uppercase">
               KixCleen
             </span>
-          </Link>
-          <Link
-            to="/"
-            className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 px-4 py-1.5 text-xs font-medium text-neutral-700 hover:border-neutral-950"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Back to site
-          </Link>
+          </div>
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-xs font-medium text-neutral-600">
+            <ShieldCheck className="h-3.5 w-3.5 text-neutral-500" />
+            <span>Secure Activation</span>
+          </div>
         </div>
       </header>
 
@@ -162,24 +159,18 @@ export const BuyerSetupPage: React.FC = () => {
                     This account setup has already been completed and is active. You can log into the KixCleen Monitoring Mobile App directly with your credentials.
                   </p>
                 </div>
-                <Link
-                  to="/"
-                  className="inline-flex w-full items-center justify-center rounded-full bg-neutral-950 px-5 py-2.5 text-xs font-medium text-white hover:bg-neutral-800"
-                >
-                  Return to Home
-                </Link>
+                <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3 text-center text-xs text-neutral-600">
+                  Account is ready. Open the KixCleen Monitoring Mobile App to sign in.
+                </div>
               </div>
             ) : verifyError ? (
               <div className="space-y-4">
                 <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-xs text-neutral-600">
                   {verifyError}
                 </div>
-                <Link
-                  to="/"
-                  className="inline-flex w-full items-center justify-center rounded-full bg-neutral-950 px-5 py-2.5 text-xs font-medium text-white hover:bg-neutral-800"
-                >
-                  Return home
-                </Link>
+                <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3 text-center text-xs text-neutral-500">
+                  Please ask your Super Administrator to generate a new invitation if needed.
+                </div>
               </div>
             ) : completed && invitation ? (
               <div className="space-y-4">
@@ -340,12 +331,9 @@ export const BuyerSetupPage: React.FC = () => {
                   </div>
                 ) : null}
 
-                <Link
-                  to="/"
-                  className="inline-flex w-full items-center justify-center rounded-full bg-neutral-950 px-5 py-2.5 text-xs font-medium text-white hover:bg-neutral-800"
-                >
-                  Back to KixCleen
-                </Link>
+                <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3 text-center text-xs text-neutral-600">
+                  Setup complete! You can launch your kiosk above or log in to the KixCleen Mobile App.
+                </div>
               </div>
             ) : (
               invitation && (

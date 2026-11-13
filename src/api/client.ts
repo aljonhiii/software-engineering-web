@@ -68,6 +68,13 @@ export async function apiRequest<T = any>(
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
+    if (response.status === 401) {
+      setStoredToken(null);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+      }
+    }
+
     throw new ApiError(
       data.message || `Request failed with status ${response.status}`,
       response.status,

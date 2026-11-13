@@ -5,7 +5,6 @@ import {
   Cpu,
   Users,
   Link2,
-  Globe,
   LogOut,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -99,16 +98,6 @@ export const AdminLayout: React.FC = () => {
               </NavLink>
             );
           })}
-
-          <div className="pt-4 mt-4 border-t border-neutral-100">
-            <Link
-              to="/"
-              className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium text-neutral-600 hover:bg-neutral-100 hover:text-neutral-950"
-            >
-              <Globe className="h-4 w-4" />
-              <span>Public Website</span>
-            </Link>
-          </div>
         </nav>
 
         <div className="border-t border-neutral-100 p-4">
