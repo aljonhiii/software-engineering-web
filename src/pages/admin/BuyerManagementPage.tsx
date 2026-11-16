@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Search, X, Monitor, Download, Play, QrCode, Mail } from 'lucide-react';
+import { Plus, Search, X, Monitor, Download, Play, QrCode, Mail, Trash2 } from 'lucide-react';
 import {
   fetchAdminBuyers,
   fetchAdminKiosks,
   createAdminBuyer,
   updateAdminBuyer,
   toggleAdminBuyerStatus,
+  deleteAdminBuyer,
   regenerateBuyerInvite,
   downloadKioskWindowsLauncher,
   getKioskLaunchUrl,
@@ -42,6 +43,9 @@ export const BuyerManagementPage: React.FC = () => {
 
   const [confirmStatusBuyer, setConfirmStatusBuyer] = useState<AdminBuyer | null>(null);
   const [toggling, setToggling] = useState<boolean>(false);
+
+  const [confirmDeleteBuyer, setConfirmDeleteBuyer] = useState<AdminBuyer | null>(null);
+  const [deleting, setDeleting] = useState<boolean>(false);
 
   const [tabletQrTarget, setTabletQrTarget] = useState<{
     kioskId: string;
@@ -189,6 +193,29 @@ export const BuyerManagementPage: React.FC = () => {
       });
     } finally {
       setToggling(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!confirmDeleteBuyer) return;
+    setDeleting(true);
+    try {
+      const res = await deleteAdminBuyer(confirmDeleteBuyer.id);
+      setFeedback({
+        type: 'success',
+        message:
+          res.message ||
+          `Buyer account "${confirmDeleteBuyer.fullName}" (${confirmDeleteBuyer.email}) was deleted successfully.`,
+      });
+      setConfirmDeleteBuyer(null);
+      await loadData();
+    } catch (err: any) {
+      setFeedback({
+        type: 'error',
+        message: err.message || 'Could not delete buyer account.',
+      });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -434,6 +461,15 @@ export const BuyerManagementPage: React.FC = () => {
                           >
                             {buyer.isActive ? 'Deactivate' : 'Activate'}
                           </button>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmDeleteBuyer(buyer)}
+                            className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50/40 px-3 py-1 text-xs font-medium text-rose-700 hover:border-rose-400 hover:bg-rose-100 transition"
+                            title={`Delete account for ${buyer.fullName} and release ${buyer.email}`}
+                          >
+                            <Trash2 className="h-3 w-3 text-rose-600" />
+                            Delete
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -658,6 +694,17 @@ export const BuyerManagementPage: React.FC = () => {
         loading={toggling}
         onConfirm={handleConfirmToggleStatus}
         onCancel={() => setConfirmStatusBuyer(null)}
+      />
+
+      <ConfirmModal
+        open={Boolean(confirmDeleteBuyer)}
+        title={`Delete ${confirmDeleteBuyer?.fullName}?`}
+        description={`This permanently deletes the buyer account and releases the email "${confirmDeleteBuyer?.email}". Any assigned kiosks will be unassigned. You will be able to invite or register this email address again.`}
+        confirmLabel="Delete Account"
+        variant="danger"
+        loading={deleting}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmDeleteBuyer(null)}
       />
 
       <TabletQrModal

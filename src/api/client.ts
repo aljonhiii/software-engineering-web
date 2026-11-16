@@ -454,6 +454,17 @@ export async function toggleAdminBuyerStatus(
   });
 }
 
+export async function deleteAdminBuyer(id: string): Promise<{
+  success: boolean;
+  message: string;
+  deletedId?: string;
+  deletedEmail?: string;
+}> {
+  return apiRequest(`/admin/buyers/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
+}
+
 export async function regenerateBuyerInvite(id: string): Promise<{
   success: boolean;
   message: string;
