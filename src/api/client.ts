@@ -312,6 +312,13 @@ export async function createAdminBuyer(payload: {
   dedicatedKioskName?: string;
   dedicatedKioskCity?: string;
   dedicatedKioskAddress?: string;
+  kioskCount?: number;
+  dedicatedKiosks?: Array<{
+    id?: string;
+    name?: string;
+    city?: string;
+    address?: string;
+  }>;
 }): Promise<{
   success: boolean;
   message: string;
@@ -323,6 +330,13 @@ export async function createAdminBuyer(payload: {
     address: string;
     launcherUrl: string;
   } | null;
+  provisionedKiosks?: Array<{
+    id: string;
+    name: string;
+    city: string;
+    address: string;
+    launcherUrl: string;
+  }>;
   launcherUrl?: string;
   invitation: {
     token: string;
@@ -428,6 +442,7 @@ export async function updateAdminBuyer(
     username?: string;
     phone?: string;
     companyName?: string;
+    kioskIds?: string[];
   }
 ): Promise<{
   success: boolean;
